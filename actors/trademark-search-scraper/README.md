@@ -176,6 +176,45 @@ WIPO-only — a different, unrelated listing from a vendor already named in `COM
 an existing mention of this specific listing). **Pricing decision: HOLD $0.002, no start fee** —
 both genuine undercutters sit at 2 users, far under this fleet's 20-user re-price threshold.
 
+**Audit refreshed 2026-11-27 (cycle 3836): 173 matched listings, and the real finding of the sweep
+was in our own screening tool rather than in anyone's price.** Own price re-read live first and
+verified 2026-11-27, unchanged: flat $0.002/result, no start fee, a single `result` charge event.
+The matched count reads 173 against 189 at cycle 3497 — that is the Apify Store search-index
+step change seen across several of this fleet's niches on 2026-11-27, not listings leaving the
+niche.
+
+**Why the undisclosed-rival count was overstated 30-fold, and what it actually is.** This Actor's
+dated sweep history was moved out of this README into `COMPETITORS.md` at cycle 3813 to stay under
+the 99,999-byte Store-page truncation cap. The screen that lists niche matches these docs do not
+name still read `README.md` alone, so it counted all 117 rivals disclosed in the relocated file as
+undisclosed and reported **159 unnamed of 173**. It now reads both files. A second trap surfaced
+while fixing it: a double-backtick literal at README:181 (a handle shape quoted verbatim) consumes
+an odd number of delimiters, which shifts the parity of the backtick scan and silently inverted the
+second file's matches when the two files were merely concatenated — so the two are now scanned
+separately, each with its own parity. The corrected screen reads **5 unnamed of 173**, and the
+disclosure surface it credits rises from 14 named handles to 201. All 5 were live-priced (all
+prices verified live 2026-11-27, `state/audit_data/c3836_tms_prices.json`), together with the
+134-handle superset the pre-fix screen had named, **134==134** against its own count, 0
+unresolvable.
+
+**Two of the five are not trademark products at all** (verified live 2026-11-27).
+`easyapi/scraper-for-wattpad-story-data` and `powerai/company-search-scraper-for-north-data` enter
+the term sweep only through the boilerplate line "All trademarks mentioned are the property of
+their respective owners" carried in their descriptions; neither reads a trademark register, and
+both are dearer than us per row besides ($0.00299 and $0.00499 plus a $0.09 start fee).
+
+**One genuine undercutter, and it is the narrowest listing in the cohort.**
+`apex-nexus/uspto-trademark-search` charges $0.0002 per dataset item plus a $0.0001 start fee
+(verified live 2026-11-27), roughly 10× under our flat rate at every tier — but it covers the US
+register only, against the 81 offices one call reaches here, and it publishes no description at
+all. The other two are dearer than us everywhere: `subimpact/uspto-trademark-search` tiers $0.003
+(FREE) down to $0.0021 (GOLD and above) with no start fee, USPTO-only and so 1.05×–1.5× dearer
+than us on every plan, and `memo23/euipo-trademark-search` matches our $0.002 rate exactly but
+adds a $0.005 start fee, leaving it dearer at every run size — it is the closest of the three in
+scope (EUIPO plus 80+ national offices) and is a distinct listing from the `memo23` entries already
+named in `COMPETITORS.md`. **Pricing decision: HOLD $0.002, no start fee** — the one genuine
+undercutter sits in the 1–2-user band, far under this fleet's 20-user re-price threshold.
+
 **Cheaper than us once a run is big enough to amortise their start fee** (all four verified 2026-10-03; two user-counts re-verified live 2026-11-27). `automation-lab` (111 users, re-verified live 2026-11-27, up from 86 at 2026-11-11, `automation-lab/euipo-tmview-trademarks-scraper`) charges a $0.005 start plus $0.0000355/record (FREE, down to $0.00001 on DIAMOND), so any run returning more than about 3 records costs less there — and it also offers application-date bounds and several search terms per run, which this Actor currently does not. `fetch_cat/uspto-trademarks-scraper` is the same shape against USPTO only: $0.005 start plus $0.00002875/record (FREE, to $0.000015 on GOLD+), crossing us at about 3 rows. `sian.agency/uspto-trademark-scraper` (40 users, re-verified live 2026-11-27, up from 34 at 2026-11-03) undercuts us only on the upper plans: its record price tiers from $0.009 (FREE, 4.5× ours) through $0.003 (BRONZE) and $0.00225 (SILVER) down to $0.0015 on **GOLD, PLATINUM and DIAMOND** — an earlier version of this sentence said PLATINUM and DIAMOND only, which understated by one plan — and on those three tiers its $0.005 start is repaid at about 10 rows; on FREE, BRONZE or SILVER it costs more than we do at every volume, and its start fee is itself tiered at **$0.05 on FREE** (not the $0.005 this section used to quote flat, which is the BRONZE-and-above figure). It never leaves the US register, but it adds availability checks, class suggestions and a detail event. `jungle_synthesizer/euipo-trademark-scraper` matches our $0.002 on FREE, and its $0.10 start fee means it undercuts us only on large runs on its top tiers. Its filed price change took effect at **09:23 UTC on 2026-10-04**, and it moves against the buyer, not for them: FREE/BRONZE ($0.002), SILVER ($0.0018) and GOLD ($0.0016) are untouched, while PLATINUM went $0.0014 → $0.0016 and DIAMOND $0.0012 → $0.0016. Before that moment its DIAMOND rate of $0.0012 beat ours above roughly 125 rows; from it, the three top tiers are flattened onto one $0.0016 price and the volume at which it undercuts us moves out to about **250 rows**. Both schedules were read live from the listing on 2026-10-04 and are filed exactly as described here.
 
 **2026-10-07 cleanup:** dropped every sub-20-user rival count from this README per the standing rule (an exact count is only published at 20+ users, since `totalUsers` churns in both directions and a one-user tick under 20 is automatically STALE at the checker's 10% tolerance) — 35 bare counts removed across the dated sweeps now in `COMPETITORS.md`, every price claim, scope exclusion and feature comparison left intact. Four of the 35 were decorated in shapes a plain `` `owner/slug` (N users) `` grep cannot see and were caught by reading the paragraphs: two where the count sits between a bare owner handle and the full slug (`scrapers_lat`, `jdepablos`, both of which now lead with the slug instead) and two bare-comma prose mentions (`khadinakbar/uspto-trademark-batch-search`, `nexgendata/india-trademark-search`). Where a count shared its parentheses with a scope or price note, only the count went: `unrivaled_fortress/wipo-global-trademark-brand-watch` still reads "(newly registered WIPO-international and US filings)", `accountable_eel/trademark-filing-watch` "(USPTO **and** EUIPO new applications by Nice class)", `stefano_seggio/kipris-patent-trademark-status-monitor` "(Korea KIPRIS)" and `dev00/uspto-trademark-text-check-api` "($0.005 per text check)". No superlative in this section was premised on a sub-20 count, so none needed rewording — the three that are premised on a count (`dltik/euipo-trademarks-scraper` busiest TMview-based, `parseforge/tmview-trademarks-scraper` second-busiest, `hanamira/patent-trademark-search` biggest trademark listing on the Store) all sit well above the threshold. Counts at 20 and above are untouched (`hanamira` 81, `crawlerbros/importyeti-scraper` 88 (that listing has since been delisted — the 2026-10-07 reading above is left as the dated record it was), `dltik/euipo-trademarks-scraper` 73, `dev00/uspto-trademark-api` 68, `alizarin_refrigerator-owner` 64, `fortuitous_pirate` 57, `nexgendata/uspto-trademark-search` 49, `nexgendata/euipo-esearch-trademarks` 38, `sian.agency/uspto-trademark-scraper` 30, `memo23` 29, `parseforge/tmview-trademarks-scraper` 24, `automation-lab` 23), as are the sweeps' structural cohort statements about where the small competition sits (the "1–2 users" bands and the "1–2-user tail" heading), which are dated findings about a swept cohort rather than live per-listing claims. This edit only removes numbers, it does not restate any — but every count left standing was re-verified against the live Store records on 2026-10-07, and none of them is stale.

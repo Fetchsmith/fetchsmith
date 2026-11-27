@@ -17,6 +17,7 @@ and read the TIERED block (eventTieredPricingUsd/tieredPricing) -- a tiered riva
 FREE-tier price is NOT its real price, and check-price-superiority only sees that one.
 """
 import importlib.util
+import os
 import re
 import sys
 
@@ -99,11 +100,40 @@ for ident, it in seen.items():
         matched.append((ident, it))
 matched.sort(key=lambda kv: -(kv[1].get("stats", {}).get("totalUsers", 0)))
 
-readme = open(f"/root/agent/actors/{slug}/README.md").read()
+# Cycle 3836: read the Actor's RELOCATED competitor trail too, not just README.md. Since
+# cycle 3813 eight Actors have had their dated `competitor_audit` history moved verbatim out
+# of README.md into a sibling COMPETITORS.md to stay under the 99,999-byte Apify Store-page
+# truncation cap (c3813 trademark-search, c3828 grants-gov, and six more). A rival named only
+# in that file is still fully disclosed -- the README links to it -- but this script read
+# README.md alone and so counted every one of them as UNNAMED. Measured on
+# trademark-search-scraper at cycle 3836: 159 "unnamed of 173 matched", of which 117 were
+# already named in COMPETITORS.md and only 17 were genuinely undisclosed -- a 9x overstatement
+# that sent the audit to live-price 134 handles to find 17 real ones. Concatenating the two
+# files is enough: every consumer below (full-handle `named` set, bare-slug paragraph credit,
+# owner_mentioned's NONE/OWNER split) then sees the whole disclosure surface.
+#
+# But they must be scanned SEPARATELY, never concatenated -- a trap this cycle hit and had to
+# back out. The `([^`]+)` span scan below is parity-sensitive: it pairs backtick 1 with 2, 3
+# with 4, and so on. README:181 of this very Actor contains a DOUBLE-backtick literal
+# (`` `owner/slug` (N users) ``, written to quote a handle shape verbatim) which consumes an
+# odd number of delimiters, so every backtick span after it in the same string pairs on the
+# wrong boundary. Concatenating README.md + COMPETITORS.md therefore INVERTED the second
+# file's pairing -- its 190 separately-visible handles became 0, the combined `named` set
+# stayed at README's 14, and only the parity-independent owner_mentioned() split changed
+# (115 NONE / 44 OWNER -> 4 NONE / 145 OWNER). Per-document scanning is immune: each file's
+# parity is its own.
+_docs = [f"/root/agent/actors/{slug}/README.md"]
+_relocated = f"/root/agent/actors/{slug}/COMPETITORS.md"
+if os.path.exists(_relocated):
+    _docs.append(_relocated)
 # Strip fenced ``` code blocks first: their internal single backticks (JSON sample output
 # etc.) pair up with surrounding prose backticks under a naive `([^`]+)` scan and swallow
 # huge spans of real text, hiding every handle inside them.
-readme = re.sub(r"```.*?```", "", readme, flags=re.S)
+_doc_texts = [re.sub(r"```.*?```", "", open(p).read(), flags=re.S) for p in _docs]
+# owner_mentioned() is a plain whole-word search, not a backtick scan, so it is parity-
+# independent and safe to run over the joined text.
+readme = "\n\n".join(_doc_texts)
+print(f"disclosure surface: {', '.join(os.path.basename(p) for p in _docs)}", file=sys.stderr)
 
 # Cycle 1431 (0-TODO-h1430): the old regex required a contiguous `owner/slug` with no
 # whitespace inside the backticks, so a handle that this README's hard-wrapped prose
@@ -111,24 +141,26 @@ readme = re.sub(r"```.*?```", "", readme, flags=re.S)
 # it renders as one handle. Strip whitespace from each backtick span before checking
 # shape, so a wrapped handle still counts as named.
 named = set()
-for span in re.findall(r"`([^`]+)`", readme):
-    cleaned = re.sub(r"\s+", "", span).lower()
-    if re.fullmatch(r"[a-z0-9_.-]+/[a-z0-9_.-]+", cleaned):
-        named.add(cleaned)
+for _text in _doc_texts:
+    for span in re.findall(r"`([^`]+)`", _text):
+        cleaned = re.sub(r"\s+", "", span).lower()
+        if re.fullmatch(r"[a-z0-9_.-]+/[a-z0-9_.-]+", cleaned):
+            named.add(cleaned)
 
 # Second house style this README (and others) use: name an owner once in prose, then for
 # each of that owner's other listings in the same paragraph, backtick only the bare slug
 # (no `owner/` prefix). Credit `owner/slug` as named if the owner appears as a plain-text
 # mention and the bare slug appears backticked somewhere in the same paragraph.
 paragraphs = []
-for para in re.split(r"\n\s*\n", readme):
-    para_lower = para.lower()
-    slugs = set()
-    for span in re.findall(r"`([^`]+)`", para):
-        cleaned = re.sub(r"\s+", "", span).lower()
-        if cleaned and "/" not in cleaned:
-            slugs.add(cleaned)
-    paragraphs.append((para_lower, slugs))
+for _text in _doc_texts:
+    for para in re.split(r"\n\s*\n", _text):
+        para_lower = para.lower()
+        slugs = set()
+        for span in re.findall(r"`([^`]+)`", para):
+            cleaned = re.sub(r"\s+", "", span).lower()
+            if cleaned and "/" not in cleaned:
+                slugs.add(cleaned)
+        paragraphs.append((para_lower, slugs))
 
 
 def bare_slug_credited(owner, bare_slug):

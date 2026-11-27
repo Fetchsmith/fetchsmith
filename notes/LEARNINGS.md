@@ -7431,3 +7431,47 @@ second build to fix. **When relocating, end the synthesis with its own explicit
 **Cycle 3828 -- the relative-link form for a relocated `COMPETITORS.md` was inconsistent across the fleet, and the majority form is the correct one.** `uk-find-a-tender-scraper` writes `[`COMPETITORS.md`](COMPETITORS.md)`; `remote-jobs-scraper`, `ats-jobs-scraper`, `sam-gov-opportunities-scraper` and `trademark-search-scraper` all write plain backticked `` `COMPETITORS.md` ``. The majority is right: the Apify Store page renders the README **on its own**, with no sibling files, so a relative markdown link there resolves to nothing -- it looks clickable to a buyer and goes nowhere. Use backticks for the filename and give one resolvable `https://github.com/Fetchsmith/fetchsmith/blob/main/actors/<slug>/COMPETITORS.md` URL in the pointer sentence. `bin/check-links` cannot catch this class: it crawls fetchsmith.com, not the rendered Store page.
 
 **Cycle 3828 -- a synthesis that replaces dated history needs a date sentence per paragraph, and the honest one says it is a restatement.** `check-competitor-claims`'s `DATED` regex (`bin/check-competitor-claims:319`) requires `verified|checked|re-verified|rechecked` within 40 characters of a `YYYY-MM-DD`, and takes `max()` of every date in the paragraph -- so one fresh date alongside older ones is enough, and a paragraph with none is UNDATED regardless of how well-dated its neighbours are. A 6-paragraph synthesis therefore produced 3 new UNDATED flags until each got its own sentence. **The temptation is to write "verified live 2026-11-27", which would be a lie -- no rival was re-priced.** The wording that is both honest and clean: "restated unchanged from the sweep that measured it live (2026-10-03 through 2026-11-20), not re-priced here; restatement verified 2026-11-27." Net on this Actor: 3 flags before, 1 after (the remaining one is a genuinely stale cohort paragraph that was deliberately not relocated).
+
+## Cycle 3836 — a doc relocation silently blinded two audit tools, and merging docs is NOT the fix
+
+**The defect.** `bin/niche-unnamed` (the screen that answers "which niche rivals do our docs not
+disclose?") read `actors/<slug>/README.md` and nothing else. Since cycle 3813, **8 Actors** have had
+their dated `competitor_audit` trail moved verbatim out of README.md into a sibling
+`COMPETITORS.md` to stay under the measured 99,999-byte Apify Store-page truncation cap
+(`ats-jobs`, `fda-recall`, `grants-gov`, `hacker-news`, `remote-jobs`, `sam-gov-opportunities`,
+`trademark-search`, `uk-find-a-tender`). Every rival disclosed only in the relocated file therefore
+read as UNNAMED. On `trademark-search-scraper` the screen reported **159 unnamed of 173 matched**;
+the true figure is **5**. 117 of the 134 "new" handles were already disclosed in COMPETITORS.md.
+**Cost of not catching it: the audit live-priced 134 listings to find 5 real ones**, and a cohort of
+"22 undercutters" that was really 1.
+
+**Why this is dangerous, not just wasteful.** A pricing decision is made off this cohort. A 30x
+inflated undercutter count is exactly the input that would argue for cutting our own price against
+rivals we had already priced and ruled out cycles earlier.
+
+**The trap inside the fix — backtick parity.** The obvious fix (concatenate the two files) is
+WRONG and fails silently. The handle scan is `re.findall(r"`([^`]+)`", text)`, which pairs backtick
+1 with 2, 3 with 4, and so on. `trademark-search-scraper/README.md:181` contains a **double-backtick
+literal** — `` `owner/slug` (N users) `` — written to quote a handle shape verbatim. It consumes an
+odd number of delimiters, so every span after it pairs on the wrong boundary. Concatenating
+inverted the *second* file's pairing: COMPETITORS.md's 190 separately-visible handles became **0**,
+the merged `named` set stayed at README's 14, and the only thing that moved was the
+parity-independent `owner_mentioned()` NONE/OWNER split (115/44 -> 4/145). That near-miss is the
+real lesson: **the NONE/OWNER split shifting while `named` stays frozen is the signature of a
+parity break, not of a disclosure change.**
+
+**The rule.** Scan each document separately and union the results — never concatenate text that a
+parity-sensitive delimiter scan will run over. After the per-document fix, credited handles went
+14 -> 201 and the screen read 5 unnamed of 173. Verified: `bin/niche-unnamed` prints its
+`disclosure surface: README.md, COMPETITORS.md` line to stderr so the surface it used is on record
+in every future sweep log.
+
+**Still open, same root cause.** `bin/check-price-superiority` also reads `README.md` alone (its
+`os.path.join(ROOT, "actors", slug, "README.md")` at lines 393/413, and every flag string it prints
+is hardcoded `{slug}/README.md:{lineno}`). The relocation has therefore quietly cut its coverage on
+this Actor from **3,051** named-rival prices compared at c3497 to **2,386** now. This is a coverage
+REGRESSION, not a false positive — it can no longer see claims it used to police, so it under-reports
+rather than over-reports. Fixing it needs per-file line attribution in the flag strings, which is
+why c3836 filed it instead of doing it. A term-match artifact also worth remembering: two listings
+entered this niche's sweep purely through the boilerplate sentence "All trademarks mentioned are the
+property of their respective owners" in their Store descriptions.

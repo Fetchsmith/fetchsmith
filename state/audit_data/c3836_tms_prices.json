@@ -1,0 +1,6569 @@
+[
+ {
+  "handle": "scrapesage/redfin-scraper",
+  "title": "Real Estate Scraper for Redfin - Listings, Sold Comps & Leads",
+  "users": 197,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "property",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): detailEnriched,property",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "property": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Property scraped"
+   },
+   "detailEnriched": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Property detail enriched"
+   }
+  },
+  "desc": "Scrape for-sale & sold homes on Redfin for any US city, ZIP, neighborhood or county: price, beds/baths/sqft, HOA, Redfin Estimate, rent estimate, price history, schools & agent leads. Independent tool - not affiliated with or endorsed by Redfin Corporation; all trademarks belong to their owners."
+ },
+ {
+  "handle": "piotrv1001/ziprecruiter-jobs-scraper",
+  "title": "Job Listings Scraper for ZipRecruiter",
+  "users": 153,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,job-detail",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-detail": {
+    "tiers": {
+     "FREE": 0.016
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Full job details"
+   }
+  },
+  "desc": "Scrape job listings from ZipRecruiter by keyword and location: title, company, salary, description, and more. Independent tool, not affiliated with or endorsed by ZipRecruiter, Inc. All trademarks are property of their respective owners."
+ },
+ {
+  "handle": "easyapi/scraper-for-wattpad-story-data",
+  "title": "Scraper for Wattpad Story Data",
+  "users": 102,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 0.09,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00299
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.09
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Collect public Wattpad story data from search results: titles, authors, tags, reads and votes. This Actor is an independent tool and is not affiliated with, endorsed by, or sponsored by Wattpad or any of its subsidiaries. All trademarks mentioned are the property of their respective owners."
+ },
+ {
+  "handle": "powerai/company-search-scraper-for-north-data",
+  "title": "Company Search Scraper for North Data",
+  "users": 95,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00499
+  },
+  "start_fee": 0.09,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00499
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.09
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract public company listings from a search results page, with pagination. This Actor is an independent tool and is not affiliated with, endorsed by, or sponsored by North Data or any of its subsidiaries. All trademarks mentioned are the property of their respective owners."
+ },
+ {
+  "handle": "vncntlabs/keyword-search-volume",
+  "title": "Keyword Search Volume: Planner + Amazon, Bing & AI",
+  "users": 45,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "google-volume",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-volume,amazon-volume,bing-batch,bing-volume,google-volume,keyword-batch,trademark-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "keyword-batch": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Keyword batch"
+   },
+   "google-volume": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Google search volume"
+   },
+   "amazon-volume": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Amazon search volume"
+   },
+   "bing-batch": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Bing batch"
+   },
+   "bing-volume": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Bing search volume"
+   },
+   "ai-volume": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "AI search volume"
+   },
+   "trademark-check": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Trademark check"
+   }
+  },
+  "desc": "Bulk keyword search volume for Google, Amazon, Bing and AI. Google volumes come from Google Ads Keyword Planner data, no Ads account needed. CPC, competition, 12-month trend, difficulty and intent for up to 50,000 keywords per run, Google from $0.003 per keyword. Optional USPTO trademark flag."
+ },
+ {
+  "handle": "foxlabs/uspto-trademark-leads",
+  "title": "USPTO New Trademark Filings & Search \u2014 Leads with Contacts",
+  "users": 40,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Daily US trademark application leads and register search from USPTO: new filings 1-2 days after filing, or search by mark text or owner name. Owner name & address, attorney, correspondent email & phone, pro-se flag, classes and goods \u2014 for IP law firms and brand protection. No key required."
+ },
+ {
+  "handle": "getascraper/wildberries-seller-scraper",
+  "title": "Wildberries Seller Scraper: INN, Address, Trademark, \u041f\u0440\u043e\u0434\u0430\u0432\u0446\u044b",
+  "users": 32,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00275,
+   "SILVER": 0.0025,
+   "GOLD": 0.00225,
+   "PLATINUM": 0.00225,
+   "DIAMOND": 0.00225
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,seller-dossier",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00275,
+     "SILVER": 0.0025,
+     "GOLD": 0.00225,
+     "PLATINUM": 0.00225,
+     "DIAMOND": 0.00225
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result row"
+   },
+   "seller-dossier": {
+    "tiers": {
+     "FREE": 0.0018,
+     "BRONZE": 0.0016,
+     "SILVER": 0.0015,
+     "GOLD": 0.0013,
+     "PLATINUM": 0.0013,
+     "DIAMOND": 0.0013
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Seller dossier"
+   }
+  },
+  "desc": "Verify any Wildberries seller's registered company: INN, legal name, address, and trademark from a seller ID or store URL. Or enter a product keyword to discover the real sellers behind matching results. Spot new sellers on a schedule. \u041f\u0430\u0440\u0441\u0435\u0440 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u043e\u0432 \u0412\u0430\u0439\u043b\u0434\u0431\u0435\u0440\u0440\u0438\u0437 for due diligence."
+ },
+ {
+  "handle": "maged120/social-username-checker",
+  "title": "Username Checker \u2014 60+ Social Sites, Domains & Trademarks",
+  "users": 33,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011,
+   "SILVER": 0.01,
+   "GOLD": 0.009,
+   "PLATINUM": 0.009,
+   "DIAMOND": 0.009
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.011,
+     "SILVER": 0.01,
+     "GOLD": 0.009,
+     "PLATINUM": 0.009,
+     "DIAMOND": 0.009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Check if a username is available or taken on 60+ sites at once: Instagram, X, TikTok, YouTube, Snapchat, Discord, Telegram, Reddit, Twitch, GitHub, Steam and more. Optional domain and US trademark checks."
+ },
+ {
+  "handle": "scrapesage/uspto-trademark-scraper",
+  "title": "USPTO Trademark Scraper - Brand-Owner & Attorney Leads",
+  "users": 27,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): attorneyLead,detailEnrichment,ownerLead,trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   },
+   "detailEnrichment": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Detail enrichment"
+   },
+   "ownerLead": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Brand-owner lead"
+   },
+   "attorneyLead": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "IP-attorney lead"
+   }
+  },
+  "desc": "Scrape USPTO trademarks by keyword, owner, class or serial number. Get mark, status, Nice classes, owner name & address, goods & services, dates, plus the filing attorney's name & email. Export brand-owner and IP-attorney leads. Monitor new filings. No API key, no browser."
+ },
+ {
+  "handle": "haketa/ziprecruiter-scraper",
+  "title": "Job Listings & Salary Scraper for ZipRecruiter (US, UK, IE, CA)",
+  "users": 25,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0023,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0023,
+     "SILVER": 0.002,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "ZipRecruiter job & salary scraper/API (US, UK, Ireland, Canada): search by keyword/location; export title, company, salary, location, type, date, description, apply URL. No login. Independent tool, not affiliated with or endorsed by ZipRecruiter; trademarks belong to their owners."
+ },
+ {
+  "handle": "haketa/redfin-scraper",
+  "title": "US Real Estate Listings & Sold Homes Scraper for Redfin",
+  "users": 23,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US real estate from Redfin.com: homes for sale & rent \u2014 address, price, beds, baths, sqft, lot size, property type, MLS, agent, photos & coordinates. Fast, no login. Independent tool, not affiliated with or endorsed by Redfin; all trademarks belong to their respective owners."
+ },
+ {
+  "handle": "scrapesage/cargurus-scraper",
+  "title": "Used Car Scraper for CarGurus - Listings, VINs & Dealer Leads",
+  "users": 19,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "listing",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dealer_lead,listing,listing_details",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "listing": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Car listing"
+   },
+   "listing_details": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Listing details enrichment"
+   },
+   "dealer_lead": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Dealer lead"
+   }
+  },
+  "desc": "Scrape used-car listings & dealer leads from CarGurus by ZIP or search URL: VIN, price, Instant Market Value & deal rating, mileage, specs, photos, plus dealer name, phone & address. Independent tool - not affiliated with or endorsed by CarGurus, Inc.; all trademarks belong to their owners."
+ },
+ {
+  "handle": "trev0n/tmview-scraper",
+  "title": "TMview Trademark Search & Watch",
+  "users": 17,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,trademark-details",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trade mark"
+   },
+   "trademark-details": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Trade mark details"
+   }
+  },
+  "desc": "Search 140M+ trade marks from the EUIPO, WIPO, USPTO and ~80 national offices via TMview: name, owner, Nice classes, status, dates, goods & services, oppositions. Watch mode alerts you to new conflicting filings and their opposition deadline."
+ },
+ {
+  "handle": "ryanclinton/euipo-trademark-search",
+  "title": "EUIPO Trademark Search \u2014 By Name, Class & Status",
+  "users": 16,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-fetched",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-fetched",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark-fetched": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark fetched"
+   }
+  },
+  "desc": "Search EU trademarks via the official EUIPO API. Find registered, pending, or expired trademarks by name, Nice class, applicant, status, or date. Returns application details, owners, goods & services, and EUIPO links."
+ },
+ {
+  "handle": "sheshinmcfly/uspto-trademark-checker",
+  "title": "USPTO Trademark Status Checker: Bulk TSDR Lookup",
+  "users": 12,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Check US trademarks by serial number, registration number or TSDR link: status, owner, attorney, classes, goods and services, first-use dates, prosecution history and next renewal deadline. Check hundreds per run and track only what changed in your portfolio."
+ },
+ {
+  "handle": "haketa/healthgrades-scraper",
+  "title": "Doctor Directory, Ratings & Reviews Scraper for Healthgrades",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0028,
+   "BRONZE": 0.0025,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0028,
+     "BRONZE": 0.0025,
+     "SILVER": 0.002,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US doctors from Healthgrades: name, NPI, specialty, patient ratings, review counts, phone, address & hospital affiliations. Medical provider data & lead gen. Independent tool, not affiliated with or endorsed by Healthgrades; all trademarks belong to their owners."
+ },
+ {
+  "handle": "rl1987/fl-sunbiz-mcp",
+  "title": "Florida Business Registry MCP Server \u2013 Sunbiz Corporate Filings",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-call",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "tool-call": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.0025,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "MCP tool invocation"
+   }
+  },
+  "desc": "MCP server that gives AI agents Florida business registry lookups. Search Sunbiz corporations, LLCs, partnerships, fictitious names (DBAs), trademarks, cable franchises and liens by name, officer, registered agent, FEI/EIN, ZIP or address, then pull the full filing record."
+ },
+ {
+  "handle": "magnova/uspto-trademark-search",
+  "title": "USPTO Trademark Search",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-fetched",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0034,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-fetched",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-fetched": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.004,
+     "SILVER": 0.0034,
+     "GOLD": 0.0028,
+     "PLATINUM": 0.0028,
+     "DIAMOND": 0.0028
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Search U.S. federal trademarks from the official USPTO database \u2014 wordmark, owner, international class, live/dead status, filing dates, goods/services. No API key, no login, no registration: uses the public backend behind the USPTO's own Trademark Search site, with automatic version discovery."
+ },
+ {
+  "handle": "s-r/trademark-search",
+  "title": "EUIPO Trademark Search API: Brand DB, USPTO & IP Australia",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Trademark mark row"
+   }
+  },
+  "desc": "EUIPO trademark search by name via WIPO Global Brand DB, plus USPTO, WIPO Madrid and IP Australia. Get owner, status, Nice classes and dates. TMview is currently unavailable; EUIPO number-only lookup is unavailable while it is blocked."
+ },
+ {
+  "handle": "devilscrapes/importyeti-alternative-scraper",
+  "title": "ImportYeti Alternative Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-row",
+  "unit_tiers": {
+   "BRONZE": 0.0048,
+   "DIAMOND": 0.0044,
+   "FREE": 0.005,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.0044,
+   "SILVER": 0.0046
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-row",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-row": {
+    "tiers": {
+     "BRONZE": 0.0048,
+     "DIAMOND": 0.0044,
+     "FREE": 0.005,
+     "GOLD": 0.0044,
+     "PLATINUM": 0.0044,
+     "SILVER": 0.0046
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result row emitted"
+   }
+  },
+  "desc": "Search US import/export trade profiles by company name or product keyword \u2014 one row per matched importer or supplier with shipment volume, most-recent activity, country, address, and linked trademarks. No login, no ImportYeti/Panjiva subscription. Customs data scraper and supplier directory."
+ },
+ {
+  "handle": "thoob/uspto-trademark-feed",
+  "title": "USPTO Trademark Search Feed: Applications, Owners, Status",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0036,
+     "SILVER": 0.0032,
+     "GOLD": 0.0028,
+     "PLATINUM": 0.0028,
+     "DIAMOND": 0.0028
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Pulls official USPTO daily data and returns clean, flat US trademark records: word mark, serial and registration number, owner, goods and services, class, status and dates, with a what-changed-since-last-run mode. Billed only per delivered record. No API key needed."
+ },
+ {
+  "handle": "everyotherfriday/trademark-search",
+  "title": "Trademark Search: USPTO, EUIPO & UK IPO in One Call",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-returned",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "record-returned": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Search US, EU and UK trademarks by mark or owner, with status, Nice classes and goods/services. Sources: TMview (EUIPN), www.tmdn.org/tmview, and the United States Patent and Trademark Office, www.uspto.gov."
+ },
+ {
+  "handle": "getascraper/teamblind-reviews-scraper",
+  "title": "Employee Review Scraper for TeamBlind: Ratings, Pros and Cons",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0022,
+   "BRONZE": 0.00202,
+   "SILVER": 0.00183,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00165,
+   "DIAMOND": 0.00165
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,review-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0022,
+     "BRONZE": 0.00202,
+     "SILVER": 0.00183,
+     "GOLD": 0.00165,
+     "PLATINUM": 0.00165,
+     "DIAMOND": 0.00165
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "review-check": {
+    "tiers": {
+     "FREE": 0.0024,
+     "BRONZE": 0.0022,
+     "SILVER": 0.002,
+     "GOLD": 0.0018,
+     "PLATINUM": 0.0018,
+     "DIAMOND": 0.0018
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Review Check"
+   }
+  },
+  "desc": "Export public TeamBlind employee reviews: ratings, full pros and cons, and company aggregates. No login needed. Monitor new or updated reviews. Independent tool, not affiliated with, endorsed by, or sponsored by Blind (teamblind.com). All trademarks are the property of their respective owners."
+ },
+ {
+  "handle": "abcdemprendes/uspto-trademark-search-ai",
+  "title": "USPTO Trademark Search & AI Analysis",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "basic-search",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-analysis,apify-default-dataset-item,basic-search,brand-monitoring,du-pont-analysis,phonetic-search,ttab-research,viability-report",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "result"
+   },
+   "basic-search": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Basic Search"
+   },
+   "phonetic-search": {
+    "tiers": {
+     "FREE": 0.08
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Phonetic-Search"
+   },
+   "ai-analysis": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI Risk Analysis"
+   },
+   "du-pont-analysis": {
+    "tiers": {
+     "FREE": 0.48
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Du Pont Analysis"
+   },
+   "ttab-research": {
+    "tiers": {
+     "FREE": 0.48
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "TTAB Research"
+   },
+   "viability-report": {
+    "tiers": {
+     "FREE": 2.4
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Viability Report"
+   },
+   "brand-monitoring": {
+    "tiers": {
+     "FREE": 0.2
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Brand Monitoring"
+   }
+  },
+  "desc": "Your brand is at risk every day without a trademark. Competitors \ncan file first. Copycats can steal your name. USPTO can reject you. \nRun AI-powered trademark clearance in seconds. English & Spanish."
+ },
+ {
+  "handle": "ryanclinton/brand-protection-monitor",
+  "title": "Brand Protection & Trademark Monitor",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "brand-scanned",
+  "unit_tiers": {
+   "FREE": 0.5
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): brand-scanned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "brand-scanned": {
+    "tiers": {
+     "FREE": 0.5
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Brand scanned"
+   }
+  },
+  "desc": "Protect your brand from typosquatting, social media impersonation, and online fraud."
+ },
+ {
+  "handle": "deepmine/meta-brand-mention-monitor",
+  "title": "Facebook Ad Library Search",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00059,
+   "BRONZE": 0.00049,
+   "SILVER": 0.00042,
+   "GOLD": 0.00037,
+   "PLATINUM": 0.00037,
+   "DIAMOND": 0.00037
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00059,
+     "BRONZE": 0.00049,
+     "SILVER": 0.00042,
+     "GOLD": 0.00037,
+     "PLATINUM": 0.00037,
+     "DIAMOND": 0.00037
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Meta brand mention monitor: track Facebook ads in the Meta Ads Library that mention your brand, with new and dropped mentions, mention type trends and the top advertisers naming you over time. For brand protection and trademark watch. $0.49 per 1,000 results on Starter."
+ },
+ {
+  "handle": "glistening_film/uspto-trademark-lookup",
+  "title": "USPTO Trademark Search: bulk phrase lookup, live marks",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "phrase-checked",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): phrase-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "phrase-checked": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Phrase checked"
+   }
+  },
+  "desc": "Check up to 500 trademark phrases per run against a snapshot of live US federal trademarks from official USPTO bulk data, with Nice-class filter and the snapshot date in every result. $0.002 per phrase checked, no start fee. Record lookup, not legal advice or clearance."
+ },
+ {
+  "handle": "scrapersdelight/euipo-trademark-scraper",
+  "title": "EUIPO Trademark Scraper - EU & TMview Marks, Owners, Classes",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark": {
+    "tiers": {
+     "FREE": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trade mark"
+   }
+  },
+  "desc": "Scrape EU trade marks from EUIPO and 70+ offices via TMview: search by mark, owner, number, Nice class, status, type or filing date. Get status, dates, goods & services, owner and representative with address, image, oppositions. Past the 10,000-result cap. No login, no API key."
+ },
+ {
+  "handle": "second_coming/patent-search-tool",
+  "title": "Patent & Trademark Search Tool",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.02,
+  "note": "no recurring event -- one-time/start-fee only",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": 0.02,
+  "runfee_label": "scan",
+  "runfee_crossover_rows": 10,
+  "future_pricing": [],
+  "events": {
+   "scan": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Scan run"
+   }
+  },
+  "desc": "Search patents and trademarks across USPTO, WIPO PATENTSCOPE, and EUIPO databases by keywords."
+ },
+ {
+  "handle": "brasildados/cnpj-trademarks-patents",
+  "title": "Patents and Brands (INPI) - Brazil API by CNPJ (Tax ID)",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.3
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.3
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Per CNPJ (Tax ID) queried success result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Brands and patents (INPI) for any Brazilian company by CNPJ (Tax ID): aggregate counts plus brands and patents arrays, each with status, INPI process number, classes, dates and last INPI movement. Standby API POST /check. | Marcas e patentes (INPI) por CNPJ (Tax ID)."
+ },
+ {
+  "handle": "paulovitor18/inpi-trademark-watch",
+  "title": "Brazil Trademark Watch \u2014 INPI/RPI Monitor & Deadline Alerts",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "monitor_run",
+  "unit_tiers": {
+   "FREE": 0.15
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dispatch_detected,monitor_run",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "monitor_run": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Monitor run"
+   },
+   "dispatch_detected": {
+    "tiers": {
+     "FREE": 0.75
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "New dispatch detected"
+   }
+  },
+  "desc": "Watches Brazilian trademark processes or owners in the INPI/RPI gazette and returns only new dispatches (grant, opposition, office action) since the last run. Same-day alerts for IP firms and brand owners. Delta only, no noise."
+ },
+ {
+  "handle": "openrows/us-trademark-status",
+  "title": "US Trademark Status (USPTO TSDR)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark status"
+   }
+  },
+  "desc": "Look up your own list of US trademarks by serial or registration number and get each mark's current USPTO status, dates, classes and owner from TSDR, one row per mark."
+ },
+ {
+  "handle": "thriftykiwi/trademark-search-aggregator",
+  "title": "Trademark Search Aggregator (USPTO + TMview)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result item"
+   }
+  },
+  "desc": "Search two free trademark databases at once: the USPTO trademark search and EUIPO TMview (which aggregates EUIPO plus participating offices). Returns normalised marks with status, owner, Nice classes and the official record link. No API key required."
+ },
+ {
+  "handle": "scrapersdelight/uk-trademark-scraper",
+  "title": "UK Trademark Scraper - UK IPO Register, Owners & Journal",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trade mark"
+   }
+  },
+  "desc": "Search the UK trade mark register (UK IPO) by mark, owner, number, Nice class, status or date: mark text, status, filing, registration and renewal dates, classes, goods and services, owner. Plus the IPO's weekly Trade Marks Journal with representatives, addresses and logos. No login."
+ },
+ {
+  "handle": "scrapewise/uspto-trademark-scraper",
+  "title": "USPTO Trademark Scraper: Availability, Owners, Status",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "resultado-entregue",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.00171,
+   "SILVER": 0.001539,
+   "GOLD": 0.001368,
+   "PLATINUM": 0.001368,
+   "DIAMOND": 0.001368
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): resultado-entregue",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "resultado-entregue": {
+    "tiers": {
+     "FREE": 0.0018,
+     "BRONZE": 0.00171,
+     "SILVER": 0.001539,
+     "GOLD": 0.001368,
+     "PLATINUM": 0.001368,
+     "DIAMOND": 0.001368
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark delivered"
+   }
+  },
+  "desc": "Scrape USPTO trademark search results by mark, owner, goods and services, serial or registration number. Trademark availability checker: available, taken or similar marks per name. Get status, Nice classes, dates, owners and attorney, renewal deadlines. No API key."
+ },
+ {
+  "handle": "vncntlabs/pod-trademark-checker",
+  "title": "Trademark Checker: USPTO Search for Etsy, Merch & KDP",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "listing-checked",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): listing-checked,phrase-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "listing-checked": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Listing checked"
+   },
+   "phrase-checked": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Phrase checked"
+   }
+  },
+  "desc": "Trademark checker and USPTO trademark search for POD sellers. Check listing titles, tags and slogans against 4.4M+ live USPTO trademarks before you upload to Etsy, Merch by Amazon, Redbubble, TikTok Shop or KDP. High/medium/low risk per phrase with mark, owner and TSDR link. Not legal advice."
+ },
+ {
+  "handle": "irreplaceable_chevrotain/trademark-clearance-mcp",
+  "title": "Trademark Clearance MCP",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clearance-report",
+  "unit_tiers": {
+   "FREE": 0.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clearance-report,similar-marks,status-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "clearance-report": {
+    "tiers": {
+     "FREE": 0.25
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Full clearance risk report"
+   },
+   "similar-marks": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Scored similar-mark search"
+   },
+   "status-check": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Official TSDR status lookup"
+   }
+  },
+  "desc": "Trademark clearance scoring for AI agents \u2014 \"can I use this brand name?\" answered against the US federal register with phonetic, fuzzy, and Nice-class conflict analysis. Risk verdicts with rationale and serial numbers. Pay per report, no subscription."
+ },
+ {
+  "handle": "technicaldost/uspto-trademark-status-monitor",
+  "title": "USPTO Trademark Status Monitor & Lookup",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): status-check,trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   },
+   "status-check": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Status check (no change)"
+   }
+  },
+  "desc": "Know the moment a US trademark changes status - abandoned, registered, cancelled or sold to a new owner. Tracks marks by serial number and reports exactly which fields moved since your last run, with mark text, LIVE/DEAD status, owner, Nice classes and goods and services. No API key required."
+ },
+ {
+  "handle": "ivosandoval/spain-oepm-scraper",
+  "title": "Spain OEPM Trademark & Patent Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape trademark and patent data from Spain's OEPM (Oficina Espa\u00f1ola de Patentes y Marcas). Extracts BOPI official bulletin publications including trademark registrations, patent filings, Nice classifications, and legal status changes."
+ },
+ {
+  "handle": "nexgenwatch/canada-cipo-trademark-decision-watch",
+  "title": "Canada CIPO Trademark Decisions Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "decision-delta",
+  "unit_tiers": {
+   "FREE": 0.1,
+   "BRONZE": 0.09,
+   "SILVER": 0.08,
+   "GOLD": 0.067,
+   "PLATINUM": 0.067,
+   "DIAMOND": 0.067
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): decision-delta,source-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "source-check": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.09,
+     "SILVER": 0.08,
+     "GOLD": 0.067,
+     "PLATINUM": 0.067,
+     "DIAMOND": 0.067
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Source check"
+   },
+   "decision-delta": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.09,
+     "SILVER": 0.08,
+     "GOLD": 0.067,
+     "PLATINUM": 0.067,
+     "DIAMOND": 0.067
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Decision Delta"
+   }
+  },
+  "desc": "Scrape Canadian CIPO trademark opposition and section 45 decisions: mark, parties, outcome and decision date. Every run returns the current records as a dataset. Optional watch mode returns only what changed since your last run. Pay per result."
+ },
+ {
+  "handle": "nexgenwatch/trademark-gazette-issue-digest",
+  "title": "Trademark Gazette Scraper - USPTO TMOG and CIPO Journal",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "gazette-issue-digest",
+  "unit_tiers": {
+   "FREE": 15,
+   "BRONZE": 13.5,
+   "SILVER": 12,
+   "GOLD": 10.05,
+   "PLATINUM": 10.05,
+   "DIAMOND": 10.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): gazette-issue-digest",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "gazette-issue-digest": {
+    "tiers": {
+     "FREE": 15,
+     "BRONZE": 13.5,
+     "SILVER": 12,
+     "GOLD": 10.05,
+     "PLATINUM": 10.05,
+     "DIAMOND": 10.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Gazette Issue Digest"
+   }
+  },
+  "desc": "Scrape trademark gazette issues from USPTO TMOG and the CIPO Journal: marks, owners, classes and status. One record per result. Pay per result."
+ },
+ {
+  "handle": "nexgenwatch/trademark-portfolio-report",
+  "title": "USPTO Trademark Portfolio Report",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "portfolio_report",
+  "unit_tiers": {
+   "FREE": 15,
+   "BRONZE": 13.5,
+   "SILVER": 12,
+   "GOLD": 10.05,
+   "PLATINUM": 10.05,
+   "DIAMOND": 10.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): portfolio_report",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "portfolio_report": {
+    "tiers": {
+     "FREE": 15,
+     "BRONZE": 13.5,
+     "SILVER": 12,
+     "GOLD": 10.05,
+     "PLATINUM": 10.05,
+     "DIAMOND": 10.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Portfolio risk digest"
+   }
+  },
+  "desc": "One priced report that watches your whole trademark family for the two deadlines that cost clients marks: the 30-day opposition window and the \u00a78/\u00a79 maintenance-and-renewal clock."
+ },
+ {
+  "handle": "friendlyapi/uspto-trademark-scraper",
+  "title": "USPTO Trademark Scraper & API: Daily Status Changes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "serial_check",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): events_100,serial_check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "serial_check": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.0035,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Serial checked"
+   },
+   "events_100": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.016,
+     "SILVER": 0.014,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "100 events delivered"
+   }
+  },
+  "desc": "The USPTO daily trademark firehose as clean, serial-keyed JSON events: watch serials for status changes, pull filtered event feeds (office actions, abandonments, registrations), audit dataset freshness for free. Built for legal-tech developers."
+ },
+ {
+  "handle": "pink_comic/uspto-trademark-assignment-search",
+  "title": "USPTO Trademark Assignment Search - Ownership KYB",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "USPTO trademark assignment row"
+   }
+  },
+  "desc": "Search official USPTO trademark assignments by assignee, assignor, serial/registration, or mark for IP ownership KYB and diligence. Security interests and reel/frame evidence. Related: patent search actors."
+ },
+ {
+  "handle": "reaperoak/uspto-trademark-checker-bulk",
+  "title": "USPTO Trademark Checker for Bulk Phrases (Safe / Risky)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "phrase-checked",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.019,
+   "SILVER": 0.018,
+   "GOLD": 0.017,
+   "PLATINUM": 0.017,
+   "DIAMOND": 0.017
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): phrase-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "phrase-checked": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.019,
+     "SILVER": 0.018,
+     "GOLD": 0.017,
+     "PLATINUM": 0.017,
+     "DIAMOND": 0.017
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Phrase checked"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Check hundreds of slogans and names against live US trademarks before you print them. One verdict per phrase (blocked, risky, caution, clear), by product class, with the closest matches and owners."
+ },
+ {
+  "handle": "nexgenwatch/cipo-trademark-watch",
+  "title": "CIPO Trademarks Journal Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark_delta",
+  "unit_tiers": {
+   "FREE": 0.08,
+   "BRONZE": 0.072,
+   "SILVER": 0.064,
+   "GOLD": 0.0536,
+   "PLATINUM": 0.0536,
+   "DIAMOND": 0.0536
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): journal_issue_check,trademark_delta",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark_delta": {
+    "tiers": {
+     "FREE": 0.08,
+     "BRONZE": 0.072,
+     "SILVER": 0.064,
+     "GOLD": 0.0536,
+     "PLATINUM": 0.0536,
+     "DIAMOND": 0.0536
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Confirmed Journal event delta"
+   },
+   "journal_issue_check": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.09,
+     "SILVER": 0.08,
+     "GOLD": 0.067,
+     "PLATINUM": 0.067,
+     "DIAMOND": 0.067
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Journal edition processed"
+   }
+  },
+  "desc": "Scrape the Canadian Trademarks Journal: advertised marks, applicants, goods and services, and status changes. Every run returns the current records as a dataset. Optional watch mode returns only what changed since your last run. Pay per result."
+ },
+ {
+  "handle": "delta_tools/trademark-clearance-checker",
+  "title": "Trademark Clearance Checker \u2014 USPTO Name Screening",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "name-checked",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0092,
+   "SILVER": 0.0084,
+   "GOLD": 0.008,
+   "PLATINUM": 0.008,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.0007,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): name-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "name-checked": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.0092,
+     "SILVER": 0.0084,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Name screening"
+   }
+  },
+  "desc": "Check a business name before you build on it. This trademark search screens your name against live USPTO records and returns exact and close matches grouped by class, with the owner, the status, and why each match counts. Screening only, not legal advice."
+ },
+ {
+  "handle": "lone_rachis/us-trademark-status-watch",
+  "title": "US Trademark Status and Watch (USPTO TSDR)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.01,
+   "SILVER": 0.009,
+   "GOLD": 0.008,
+   "PLATINUM": 0.008,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.009,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Current status, dates, owner, attorney, classes and latest event of US trademarks from USPTO's official TSDR API, with computed Section 8 and renewal deadlines. Watch mode reports only the marks that changed since the last run."
+ },
+ {
+  "handle": "blackfalcondata/uspto-trademark-scraper",
+  "title": "USPTO Trademark Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0036
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0036
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape tmsearch.uspto.gov \u2014 US trademark records by mark, owner, serial or registration number, with status and filing dates. Owner name and country, attorney email and prosecution history from TSDR. Full result sets past the 10,000-record limit as structured JSON."
+ },
+ {
+  "handle": "replay/inpi-veille-marques",
+  "title": "French Trademark Watch (INPI) \u2013 New Filings & Similarity Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "similarity-alert",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing,similarity-alert",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "similarity-alert": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Alerte de similarit\u00e9"
+   },
+   "filing": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "D\u00e9p\u00f4t de marque filtr\u00e9"
+   }
+  },
+  "desc": "Monitor new French trademark filings by keyword, Nice class or applicant and get explainable similarity alerts for your brands. Pay per result, uses your own free Data INPI access. Independent, not affiliated with INPI; not legal advice."
+ },
+ {
+  "handle": "atesen-software/trademark-phrase-risk-check",
+  "title": "USPTO Trademark Checker: Bulk Phrase Risk for POD Sellers",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "phrase-check",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): phrase-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "phrase-check": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Phrase checked"
+   }
+  },
+  "desc": "Check up to 1,000 slogans or brand ideas against live USPTO trademarks. One clear / low / medium / high risk verdict per phrase, with the conflicting marks, owners, classes and status. For print-on-demand, Etsy and Amazon Merch sellers. No login, no proxy."
+ },
+ {
+  "handle": "chaptersoft/trademark-watch",
+  "title": "Trademark Watch: USPTO New Filings & Similar Mark Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-match",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.008,
+   "PLATINUM": 0.008,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-match",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-match": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark match"
+   }
+  },
+  "desc": "Get alerted when someone files or publishes a US trademark that looks or sounds like yours. Fuzzy + phonetic similarity, Nice classes, opposition deadlines, since-last-run, webhook alerts. Official USPTO data, no key. Misses are free."
+ },
+ {
+  "handle": "pink_comic/oregon-trademark-search",
+  "title": "Oregon Trademark Search - State Trademark Registrations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark Registration"
+   }
+  },
+  "desc": "Search 3.5k active Oregon Secretary of State trademark and service mark registrations: registration number and date, mark description, owner or correspondent name and address, and a link to the registration record image."
+ },
+ {
+  "handle": "quillstone-labs/uspto-trademark-search",
+  "title": "USPTO Trademark Search & Monitor: Names & Slogans",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "term-checked",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.003,
+   "SILVER": 0.003,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-filing,term-checked,trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "term-checked": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.003,
+     "SILVER": 0.003,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Name or slogan check"
+   },
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.002,
+     "SILVER": 0.002,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Trademark record"
+   },
+   "new-filing": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "New filing"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "USPTO trademark search, checker, scraper and API: is a brand name or t-shirt slogan already taken? Sound-alikes included. Search marks by owner or by product, look up serial numbers with renewal dates, and monitor new filings and opposition deadlines."
+ },
+ {
+  "handle": "data-done-right/trademark-search",
+  "title": "Trademark Search API & Watch: USPTO + Australia",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.006,
+   "SILVER": 0.0054,
+   "GOLD": 0.0048,
+   "PLATINUM": 0.0048,
+   "DIAMOND": 0.0048
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-scan,trademark-record,watch-match",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.006,
+     "SILVER": 0.0054,
+     "GOLD": 0.0048,
+     "PLATINUM": 0.0048,
+     "DIAMOND": 0.0048
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   },
+   "watch-match": {
+    "tiers": {
+     "FREE": 0.08,
+     "BRONZE": 0.08,
+     "SILVER": 0.072,
+     "GOLD": 0.064,
+     "PLATINUM": 0.064,
+     "DIAMOND": 0.064
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Watch match"
+   },
+   "data-scan": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.009,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Register scan"
+   }
+  },
+  "desc": "Trademark search: check whether a brand name is already registered. Search by word mark, owner or Nice class in the US (USPTO) and Australia, with exact, fuzzy and sound-alike flags, plus trademark watch for new filings. Pay per row; no API key for Australia."
+ },
+ {
+  "handle": "actor-forge/uspto-trademark-search",
+  "title": "USPTO Trademark Search \u2014 Bulk Check If a Phrase Is Trademarked",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "phrase-checked",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): phrase-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "phrase-checked": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Phrase checked"
+   }
+  },
+  "desc": "Bulk-check phrases against the official US trademark register before you list a T-shirt, mug or Amazon product. Verdict per phrase (registered, pending, dead-only, clear) plus matching marks with owner, classes, goods and TSDR link. $0.03 per phrase."
+ },
+ {
+  "handle": "glasswing/uspto-trademark-scraper",
+  "title": "USPTO Trademark Search \u2014 Lookup & Monitoring API | $2.50/1k",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.00225,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.0045,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0025,
+     "SILVER": 0.00225,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Search US trademarks on USPTO by word mark, owner or goods, or look up serial and registration numbers: status, Nice classes, filing and registration dates, company owner, goods and services. Filter live/dead, class, filing date. No login."
+ },
+ {
+  "handle": "ivosandoval/datamon-premium",
+  "title": "Spain & EU Public Data API \u2013 Tenders, Grants, Companies",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Query public procurement (PLACE), grants (BDNS), corporate filings (BORME), trademarks (OEPM), official gazette (BOE) and EU tenders (TED) from a single database. Structured, deduplicated, updated daily."
+ },
+ {
+  "handle": "neverempty/uspto-trademark-search-monitor",
+  "title": "USPTO Trademark Search API, Scraper & New Filing Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-returned",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007,
+   "SILVER": 0.006,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): search-checked,trademark-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-returned": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007,
+     "SILVER": 0.006,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark returned"
+   },
+   "search-checked": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.0005,
+     "GOLD": 0.0005,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Monitoring check"
+   }
+  },
+  "desc": "For brand clearance, trademark watch and competitor filings: USPTO trademarks as an API, one row per mark with serial number, mark, status, owner, classes, goods and services, dates. Search by mark text, owner, live/dead and class. Trademark monitoring returns only new filings and status changes."
+ },
+ {
+  "handle": "northbell/us-trademark-search",
+  "title": "US Trademark Search (USPTO) \u2014 Marks, Status & Classes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Run started"
+   },
+   "trademark": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "US trademark search at $1 per 1,000 trademarks: search the USPTO (uspto.gov) register by word or by owner company for mark, status, status date, filing and registration dates, Nice classes, goods and services and the owner. Run it again or on a schedule for new filings and status changes. No login."
+ },
+ {
+  "handle": "silentflow/uspto-scraper",
+  "title": "USPTO Scraper | Trademark Search and Status",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00295,
+   "BRONZE": 0.002802,
+   "SILVER": 0.002655,
+   "GOLD": 0.002507,
+   "PLATINUM": 0.002507,
+   "DIAMOND": 0.002507
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00295,
+     "BRONZE": 0.002802,
+     "SILVER": 0.002655,
+     "GOLD": 0.002507,
+     "PLATINUM": 0.002507,
+     "DIAMOND": 0.002507
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark"
+   }
+  },
+  "desc": "USPTO trademark scraper: search the US trademark register by brand name, owner or goods and services, or pull marks by serial number or TSDR link. Get status, owner and address, Nice classes, filing dates, drawing type, filing basis and documents. 50 trademarks in 1 second, 37 fields each. No login."
+ },
+ {
+  "handle": "spider_studio/tianyancha-dimension",
+  "title": "Tianyancha Risk Data Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dimension-counts",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dimension-counts",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "dimension-counts": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Dimension Counts"
+   }
+  },
+  "desc": "Scrape Tianyancha company dimension counts by gid, including operating risks, lawsuits, administrative penalties, patents, trademarks, shareholders, and branches. Combine with Search, Basic Info, Dynamics, Shareholders, Listing, and News Actors for risk scoring, IP research, and company screening."
+ },
+ {
+  "handle": "nimbryxo-studio/importyeti-us-importer-and-global-supplier-search",
+  "title": "ImportYeti US Importer & Global Supplier Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00099,
+   "BRONZE": 0.00082,
+   "SILVER": 0.00066,
+   "GOLD": 0.00049,
+   "PLATINUM": 0.00049,
+   "DIAMOND": 0.00049
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.077,
+     "SILVER": 0.053,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00099,
+     "BRONZE": 0.00082,
+     "SILVER": 0.00066,
+     "GOLD": 0.00049,
+     "PLATINUM": 0.00049,
+     "DIAMOND": 0.00049
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Search ImportYeti by company name or product keyword to find US importers or their overseas suppliers, with country, address, lifetime shipment count, most recent shipment date, trademarks, and profile link."
+ },
+ {
+  "handle": "lexis-solutions/data-inpi-fr-scraper",
+  "title": "data.inpi.fr Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.009,
+   "BRONZE": 0.008,
+   "SILVER": 0.0072,
+   "GOLD": 0.0064,
+   "PLATINUM": 0.0064,
+   "DIAMOND": 0.0064
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.009,
+     "BRONZE": 0.008,
+     "SILVER": 0.0072,
+     "GOLD": 0.0064,
+     "PLATINUM": 0.0064,
+     "DIAMOND": 0.0064
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Data INPI (data.inpi.fr) for French company, trademark, patent, and design records, turning advanced searches and filters into structured JSON datasets for brand research, patent monitoring, and legal analytics."
+ },
+ {
+  "handle": "devilscrapes/euipo-trademark-search-scraper",
+  "title": "EUIPO Trademark Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-emitted",
+  "unit_tiers": {
+   "BRONZE": 0.00192,
+   "DIAMOND": 0.00176,
+   "FREE": 0.002,
+   "GOLD": 0.00176,
+   "PLATINUM": 0.00176,
+   "SILVER": 0.00184
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-emitted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-emitted": {
+    "tiers": {
+     "BRONZE": 0.00192,
+     "DIAMOND": 0.00176,
+     "FREE": 0.002,
+     "GOLD": 0.00176,
+     "PLATINUM": 0.00176,
+     "SILVER": 0.00184
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Result emitted"
+   }
+  },
+  "desc": "EUIPO Trademark Search Scraper: search EUIPO and TMview trademarks by word: mark name, owner, status, Nice classes, application, registration and expiry dates, office and record URL. Filter by office, match mode and page depth, as clean deduplicated rows."
+ },
+ {
+  "handle": "olliolli/eu-trademark-watch",
+  "title": "EUIPO & Benelux Trademark Search & Watch (TMview)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mark-check",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): baseline-mark,mark-check,match,residential-proxy",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "mark-check": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Mark checked"
+   },
+   "match": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Similar filing"
+   },
+   "baseline-mark": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Baseline mark"
+   },
+   "residential-proxy": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Residential proxy mark"
+   },
+   "residential-session": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Residential session"
+   }
+  },
+  "desc": "Find similar trademark names across EUIPO and Benelux via TMview. Compare spelling, sound and Nice classes; track new filings, status changes and available opposition deadlines. Export results or send webhook alerts. Optional official EUIPO API access."
+ },
+ {
+  "handle": "noahadler/euipo-uspto-trademark-search",
+  "title": "USPTO Trademark Search \u2014 Owner, Status & Class",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark"
+   }
+  },
+  "desc": "USPTO Trademark Search for owner, status and class: mark text, titular, live or dead, serial, registration number and Nice class. No API key. marca registrada is the same public index. EUIPO still needs your own key and is not this title."
+ },
+ {
+  "handle": "zinin/trademark-class-overlap-review",
+  "title": "Trademark Class Overlap Review",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.03125,
+   "BRONZE": 0.028125,
+   "SILVER": 0.025,
+   "GOLD": 0.021875,
+   "PLATINUM": 0.021875,
+   "DIAMOND": 0.021875
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-found": {
+    "tiers": {
+     "FREE": 0.03125,
+     "BRONZE": 0.028125,
+     "SILVER": 0.025,
+     "GOLD": 0.021875,
+     "PLATINUM": 0.021875,
+     "DIAMOND": 0.021875
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Mark assessment"
+   }
+  },
+  "desc": "Group observed USPTO wordmarks and review class overlap across distinct serial records. Preserve reported status and date conflicts in source-linked assessments without a clearance verdict."
+ },
+ {
+  "handle": "zaiq/domain-hunter",
+  "title": "Domain Finder: Brandable Names & Availability Evidence",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "domain-hunt",
+  "unit_tiers": {
+   "FREE": 1.49,
+   "BRONZE": 1.49,
+   "SILVER": 1.341,
+   "GOLD": 1.192,
+   "PLATINUM": 1.192,
+   "DIAMOND": 1.192
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): domain-hunt",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "domain-hunt": {
+    "tiers": {
+     "FREE": 1.49,
+     "BRONZE": 1.49,
+     "SILVER": 1.341,
+     "GOLD": 1.192,
+     "PLATINUM": 1.192,
+     "DIAMOND": 1.192
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Completed hunt"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Generate hundreds of domain ideas, check registry availability live, compare public asking prices and rank short, brandable names by transparent scores. Includes dated registrar prices, history, trademark search evidence and signed-out social checks when sources answer."
+ },
+ {
+  "handle": "thequietstack/uspto-trademark-watch",
+  "title": "USPTO Trademark Monitor \u00b7 Similar New Filings & Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-match",
+  "unit_tiers": {
+   "FREE": 0.03,
+   "BRONZE": 0.027,
+   "SILVER": 0.024,
+   "GOLD": 0.021,
+   "PLATINUM": 0.021,
+   "DIAMOND": 0.021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-match",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark-match": {
+    "tiers": {
+     "FREE": 0.03,
+     "BRONZE": 0.027,
+     "SILVER": 0.024,
+     "GOLD": 0.021,
+     "PLATINUM": 0.021,
+     "DIAMOND": 0.021
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Matched trademark"
+   }
+  },
+  "desc": "USPTO trademark monitoring for brand protection: new US filings and publications that look or sound like your marks, scored by similarity, with Nice classes and opposition deadlines. Run it on a schedule and every conflicting mark is reported and charged once."
+ },
+ {
+  "handle": "axiomworks/uspto-trademark-search-scraper",
+  "title": "USPTO Trademark Data Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.00425,
+   "BRONZE": 0.003825,
+   "SILVER": 0.0034,
+   "GOLD": 0.002975,
+   "PLATINUM": 0.002975,
+   "DIAMOND": 0.002975
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.00425,
+     "BRONZE": 0.003825,
+     "SILVER": 0.0034,
+     "GOLD": 0.002975,
+     "PLATINUM": 0.002975,
+     "DIAMOND": 0.002975
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search the USPTO trademark service and return structured application and registration records, including mark text, serial number, owner, status, classes, goods and services, and dates."
+ },
+ {
+  "handle": "maliksaid/uspto-trademark-watch",
+  "title": "USPTO Trademark Watch & Opposition Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-match",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): issue-scan,number-check,trademark-match",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trademark-match": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Gazette entry"
+   },
+   "number-check": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Number checked"
+   },
+   "issue-scan": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Issue read in full"
+   }
+  },
+  "desc": "Watch the USPTO Trademark Official Gazette for marks that match your brand terms, competitor names or Nice classes. Get the 30-day opposition deadline, goods and services and owner type. Similar-mark matching, monitor mode for alerts and batch serial or registration number checks. No API key."
+ },
+ {
+  "handle": "titan_coder/uspto-patent-assignment-ownership-radar",
+  "title": "USPTO Patent Assignment & Ownership Radar (Save 90%)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent-assignment-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-assignment-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "patent-assignment-delivered": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "USPTO Patent Assignment Delivered"
+   }
+  },
+  "desc": "Sub-second IP intelligence tracking US patent and trademark ownership assignments, corporate M&A transfers, and patent portfolio sales recorded at the USPTO."
+ },
+ {
+  "handle": "glistening_film/uspto-trademark-watch",
+  "title": "Uspto Trademark Watch",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "term-watched",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): term-watched",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "term-watched": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Term watched"
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "recordsdata/uspto-trademark-status-scraper",
+  "title": "USPTO Trademark Status Scraper - Classes & Owner",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.01875,
+   "SILVER": 0.018,
+   "GOLD": 0.0175,
+   "PLATINUM": 0.0175,
+   "DIAMOND": 0.0175
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): attorney-record,class-record,document-record,owner-record,trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.01875,
+     "SILVER": 0.018,
+     "GOLD": 0.0175,
+     "PLATINUM": 0.0175,
+     "DIAMOND": 0.0175
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   },
+   "class-record": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01375,
+     "SILVER": 0.013,
+     "GOLD": 0.0125,
+     "PLATINUM": 0.0125,
+     "DIAMOND": 0.0125
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Class record"
+   },
+   "owner-record": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01375,
+     "SILVER": 0.013,
+     "GOLD": 0.0125,
+     "PLATINUM": 0.0125,
+     "DIAMOND": 0.0125
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Owner record"
+   },
+   "attorney-record": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01375,
+     "SILVER": 0.013,
+     "GOLD": 0.0125,
+     "PLATINUM": 0.0125,
+     "DIAMOND": 0.0125
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Attorney record"
+   },
+   "document-record": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01375,
+     "SILVER": 0.013,
+     "GOLD": 0.0125,
+     "PLATINUM": 0.0125,
+     "DIAMOND": 0.0125
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Document record"
+   }
+  },
+  "desc": "Look up USPTO trademark status by serial or registration number: mark, filing and status dates, registered classes, owner, attorney of record and prosecution history documents. Export CSV, Excel, JSON. No login or API key. Tested: 10 marks with extras in 29 seconds."
+ },
+ {
+  "handle": "protocol/brand-name-ip-screener",
+  "title": "Brand Name IP Screener",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screening_report_produced",
+  "unit_tiers": {
+   "FREE": 1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): candidate_generated_and_rescreened,screening_report_produced",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "screening_report_produced": {
+    "tiers": {
+     "FREE": 1
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Name screened in one jurisdiction"
+   },
+   "candidate_generated_and_rescreened": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Name generated and screened"
+   }
+  },
+  "desc": "Screens brand names vs curated famous-mark seed datasets (not full registry) for trademark-collision risk across FR/US/EU/WO/UK \u2014 visual + phonetic similarity scoped to Nice classes, with a domain co-check. Clear/caution/high-risk per jurisdiction. Informational only \u2014 not legal advice."
+ },
+ {
+  "handle": "nexgenwatch/trademark-dispute-mcp",
+  "title": "Trademark Opposition MCP Server \u2014 TTAB & Canada Disputes",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mcp-tool-call",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): mcp-tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "mcp-tool-call": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "A trademark MCP server that answers 'has anyone contested a mark like this' \u2014 trademark opposition and dispute records from the USPTO Trademark Trial and Appeal Board (TTAB) and the Canadian Trademarks Opposition Board. Reports disputes, not clearance. Pay per tool call."
+ },
+ {
+  "handle": "topapi/uspto-trademark-scraper",
+  "title": "USPTO Trademark Scraper - Status, Owners & New Filings",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-details,trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.0028
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   },
+   "trademark-details": {
+    "tiers": {
+     "FREE": 0.0019
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "TSDR details"
+   }
+  },
+  "desc": "Scrape US trademarks from the USPTO register by brand name, owner, goods, class or serial number: status, filing and registration dates, Nice classes, goods & services, owner and address, attorney. Add TSDR e-mails and history. Monitor new filings. No API key."
+ },
+ {
+  "handle": "foxlabs/euipo-trademark-data",
+  "title": "EUIPO & TMview Trademark Scraper \u2014 70+ Offices",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Trademark delivered"
+   }
+  },
+  "desc": "Search trademarks across TMview (EUIPO + 70 national IP offices): mark name, applicant, application & registration numbers, status, filing/registration dates, Nice classes, office and mark image. No API key, no login."
+ },
+ {
+  "handle": "alexmorain/inpi-trademark-scraper",
+  "title": "INPI Trademark Search: French, EU & International Marks",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00085,
+   "SILVER": 0.0007,
+   "GOLD": 0.0005,
+   "PLATINUM": 0.0005,
+   "DIAMOND": 0.0005
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark,trademark-with-details",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.0007,
+     "GOLD": 0.0005,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark"
+   },
+   "trademark-with-details": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0026,
+     "SILVER": 0.0022,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Detailed trademark"
+   }
+  },
+  "desc": "Search French, EU and international trademarks through the official INPI API: every mark of a search past the 200-per-page limit that drops 30 to 45% of results, search by SIREN of the applicant, Nice classes, filing dates, SIREN and goods from the notice. Uses your free INPI account."
+ },
+ {
+  "handle": "kdhan/uspto-trademark-search",
+  "title": "USPTO Trademark Search - Status, Owner, Classes from Bulk Data",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Search US trademarks by word, prefix or exact text, or look up by serial or registration number. Returns live/dead status, filing and registration dates, owner name and country, and Nice classes from the official USPTO bulk data. No API key, no scraping."
+ },
+ {
+  "handle": "zet46/uspto-trademark-scraper",
+  "title": "USPTO Trademark Scraper - TSDR Status by Serial/Reg #",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "status",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): status",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "status": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Trademark status row"
+   }
+  },
+  "desc": "Live USPTO trademark status from TSDR. Look up by Serial or Registration Number: mark text, status, TM5 live/dead, filing/registration dates, Int. Classes, goods/services, owner, basis flags, prosecution history. Use when an agent needs trademark status, availability, or history. $0.50 per 1,000."
+ },
+ {
+  "handle": "automation_studio/uspto-trademark-radar",
+  "title": "\u2696\ufe0f USPTO Trademark Early-Warning & Stealth Brand Watcher",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.0035,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Verified USPTO Trademark Record"
+   }
+  },
+  "desc": "Track newly filed trademarks, competitor stealth brands (Apple, Nike, OpenAI, etc.), Nice classes, examining attorneys, and trigger instant Discord/Slack webhook alerts."
+ },
+ {
+  "handle": "subimpact/uspto-trademark-search",
+  "title": "USPTO Trademark Search - Status, Owners & Classes",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark,trademark-details",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark row"
+   },
+   "trademark-details": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "TSDR case details"
+   }
+  },
+  "desc": "Search the USPTO trademark register by word mark, owner, goods and services or attorney, or look marks up by serial or registration number. Status, owners, classes and optional TSDR case details as JSON. $3.00 per 1,000 trademarks, platform usage included."
+ },
+ {
+  "handle": "getascraper/dpma-trademark-register-scraper",
+  "title": "DPMA German Trademark Register Scraper: Bulk Search & Watchlist",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00035,
+   "BRONZE": 0.00032,
+   "SILVER": 0.00029,
+   "GOLD": 0.00026,
+   "PLATINUM": 0.00026,
+   "DIAMOND": 0.00026
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00035,
+     "BRONZE": 0.00032,
+     "SILVER": 0.00029,
+     "GOLD": 0.00026,
+     "PLATINUM": 0.00026,
+     "DIAMOND": 0.00026
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark result"
+   }
+  },
+  "desc": "Bulk-search the DPMA German trademark register for multiple candidate marks in one run. Get status, Nice classes, opposition history, and full procedure timelines, plus a recurring watch mode reporting only new or changed marks. Built for IP clearance, not one mark at a time. From $0.00035/result."
+ },
+ {
+  "handle": "seibs.co/uspto-patent-intel",
+  "title": "USPTO Patent + Trademark Scraper - Co-Assignees, Citations",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent_record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): citation_enrichment,family_lookup,intelligence_record,patent_record,trademark_record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "patent_record": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Patent record"
+   },
+   "trademark_record": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Trademark record"
+   },
+   "citation_enrichment": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Citation enrichment"
+   },
+   "intelligence_record": {
+    "tiers": {
+     "FREE": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Intelligence record"
+   },
+   "family_lookup": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Family lookup"
+   }
+  },
+  "desc": "USPTO patent and trademark intelligence. Co-assignee mapping (partnership and M&A intel), CPC tech-cluster analysis, inventor mobility, expiration calendar, family and citation graph, trademark watch. For IP law firms, R&D, competitive intel, VC due diligence."
+ },
+ {
+  "handle": "solidcode/uspto-patent-trademark-scraper",
+  "title": "USPTO Patent & Trademark Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent-record",
+  "unit_tiers": {
+   "FREE": 0.0048,
+   "BRONZE": 0.00452,
+   "SILVER": 0.00428,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-record,trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "patent-record": {
+    "tiers": {
+     "FREE": 0.0048,
+     "BRONZE": 0.00452,
+     "SILVER": 0.00428,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Patent record"
+   },
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.0042,
+     "BRONZE": 0.00395,
+     "SILVER": 0.00375,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Trademark record"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $3.50 / 1K] Search and extract US patent and trademark records from the USPTO. Look up by keyword, inventor, assignee, or classification, or pull specific patent and trademark numbers \u2014 get titles, abstracts, owners, inventors, dates, status, and classifications."
+ },
+ {
+  "handle": "shane_reich/name-clearance-verdict",
+  "title": "Name Clearance Verdict \u2014 Trademark & Domain Check",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "verdict",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): verdict,watch-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "verdict": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Clearance verdict"
+   },
+   "watch-check": {
+    "tiers": {
+     "FREE": 0.04
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Watch check"
+   }
+  },
+  "desc": "One call: is this brand name safe to use? Trademark knockout across USPTO + TMview (70+ IP offices) with phonetic collision matching, domain availability, best-effort social handles, a composite risk grade, and alternative names that clear. Built for AI agents via MCP. Not legal advice."
+ },
+ {
+  "handle": "apex-nexus/uspto-trademark-search",
+  "title": "USPTO Trademark Search & Clearance",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0002
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Per trademark record"
+   },
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Per actor start"
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "neuton/uspto-trademark-keyword-search",
+  "title": "USPTO Trademark Keyword Search and Filing Data",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Export trademark keyword matches, filing dates, registration details, owners and goods summaries from bounded public USPTO searches. Research data, not legal clearance."
+ },
+ {
+  "handle": "dltik/euipo-trademarks-scraper",
+  "title": "EUIPO Trademarks Scraper: 100M+ EU/Global Trademarks via TMview",
+  "users": 197,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 5e-05,
+  "note": "AMBIGUOUS: 4 recurring, no primary flag",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): applicant-enriched,clearance-analyzed,trademark-detail,trademark-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trademark-result": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Trademark result"
+   },
+   "trademark-detail": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Trademark detail enrichment"
+   },
+   "applicant-enriched": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Applicant \u2192 company link"
+   },
+   "clearance-analyzed": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "AI brand-clearance (likelihood of confusion)"
+   }
+  },
+  "desc": "Search 100M+ trademarks from EUIPO + 70 IP offices (USPTO, INPI, DPMA, WIPO Madrid). Nice class, status, dates, goods & services. AI brand-clearance + applicant\u2192company. No API key. $0.01/result."
+ },
+ {
+  "handle": "parseforge/sunbiz-florida-business-scraper",
+  "title": "Sunbiz Florida Business Scraper",
+  "users": 149,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.005505,
+   "SILVER": 0.00501,
+   "GOLD": 0.0045,
+   "PLATINUM": 0.0045,
+   "DIAMOND": 0.0045
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "init": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.005505,
+     "SILVER": 0.00501,
+     "GOLD": 0.0045,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.0045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrape Florida business entity data from the Division of Corporations (search.sunbiz.org). Supports all 9 search types including entity name, document number, registered agent, officer, FEI number, trademark, zip code, and street address."
+ },
+ {
+  "handle": "dev00/uspto-trademark-api",
+  "title": "USPTO Trademark Batch Search API",
+  "users": 116,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-verify",
+  "unit_tiers": {
+   "FREE": 0.1,
+   "BRONZE": 0.003,
+   "SILVER": 0.003,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-verify",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-verify": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.003,
+     "SILVER": 0.003,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark Batch Check"
+   }
+  },
+  "desc": "Bulk verify keywords and phrases against the USPTO database to instantly detect LIVE and PENDING trademarks."
+ },
+ {
+  "handle": "hanamira/patent-trademark-search",
+  "title": "Patent Trademark Search",
+  "users": 85,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Search patents and trademarks by keyword, company, or inventor. Get structured data with patent IDs, titles, abstracts, and direct URLs. Perfect for IP research, brand checks, and competitive intelligence."
+ },
+ {
+  "handle": "memo23/uspto-trademark-scraper",
+  "title": "USPTO Trademark Search \u2014 Wordmark, Owner, Class & Serial Lookup",
+  "users": 74,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.007
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.007
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "Search US federal trademarks straight from USPTO: by wordmark/brand, owner name, or goods & services, plus exact serial-number lookup. Filter by live/dead status and Nice class. Full records \u2014 status, owner, classes, dates, goods, mark image. No API key. JSON/CSV"
+ },
+ {
+  "handle": "fortuitous_pirate/uspto-trademark-scraper",
+  "title": "USPTO Trademark Search, Check & Monitor \u2014 No Login, $2.79/1k",
+  "users": 65,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003488
+  },
+  "start_fee": 0.00465,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-12-04T19:15:01.000Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.00465
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003488
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "USPTO trademark search by mark, owner, goods, attorney, serial or registration number; full TSDR details with attorney e-mail; clearance check with a verdict per candidate mark; monitor of new filings and status changes; bulk. No login or cookies. MCP-ready for AI agents. $2.79 per 1,000 records."
+ },
+ {
+  "handle": "alizarin_refrigerator-owner/uspto-api---patent-trademark-data",
+  "title": "USPTO API - Patent & Trademark Data",
+  "users": 65,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 1e-05
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,get_citations,get_patent,get_patent_claims,get_trademark,search_by_assignee,search_by_inventor,search_patents,search_trademarks",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "search_patents": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search Patents"
+   },
+   "get_patent": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Patent Details"
+   },
+   "search_by_assignee": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search by Assignee"
+   },
+   "search_by_inventor": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search by Inventor"
+   },
+   "get_patent_claims": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Patent Claims"
+   },
+   "get_citations": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Patent Citations"
+   },
+   "search_trademarks": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search Trademarks"
+   },
+   "get_trademark": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Trademark Details"
+   }
+  },
+  "desc": "USPTO patent data from the USPTO Open Data Portal using your own free USPTO API key (USPTO.gov account plus ID.me). Search applications and granted patents by keyword, assignee, or inventor, or look up one patent. Without a key, live runs return a notice and charge nothing."
+ },
+ {
+  "handle": "nexgendata/uspto-trademark-search",
+  "title": "Trademark Search \u2014 USPTO Serial + IP Australia Name Search",
+  "users": 52,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,watch-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   },
+   "watch-check": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Watch check"
+   }
+  },
+  "desc": "Trademark due diligence and brand clearance: search US trademarks by mark name, owner or goods/services, look up serial/registration numbers from the USPTO, and search IP Australia. Filter to live marks and Nice classes. Rows: mark, owner, status, serial, dates, class. No API key. Pay per record."
+ },
+ {
+  "handle": "nexgendata/euipo-esearch-trademarks",
+  "title": "EUIPO Trademark Search \u2014 EU Trade Mark Lookup & Clearance",
+  "users": 51,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,watch-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark"
+   },
+   "watch-check": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Watch check"
+   }
+  },
+  "desc": "EU trademark due diligence and clearance: search the EUIPO register by brand name, applicant or Nice class. JSON \u2014 mark, type, application/registration number, status, applicant, filing/registration dates, Nice classes, plus a similarity score and clearance risk. Official source. Pay per record."
+ },
+ {
+  "handle": "khadinakbar/uspto-trademark-batch-search",
+  "title": "USPTO Trademark Search API \u2014 Bulk Phrase, Serial & Owner",
+  "users": 51,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-result",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.005,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trademark-result": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "USPTO trademark result"
+   }
+  },
+  "desc": "Check phrases against the US trademark register and get one clear or conflict answer each, from live official USPTO data. Bulk trademark search and trademark checker for clearance and availability. $5 per 1,000 results, usage included, no API key or login. US only, not legal advice."
+ },
+ {
+  "handle": "scrapers_lat/tmview-global-trademarks-scraper",
+  "title": "Global Trademark Search Scraper - 77 Offices Worldwide",
+  "users": 44,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.014,
+   "SILVER": 0.013,
+   "GOLD": 0.013,
+   "PLATINUM": 0.012,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.014,
+     "SILVER": 0.013,
+     "GOLD": 0.013,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search 145M+ trademarks from 77 national and regional registers at once: mark text, owner name and address, representative, status, Nice classes, goods and services wording, oppositions, priority and seniority claims. JSON, CSV, Excel."
+ },
+ {
+  "handle": "parseforge/tmview-trademarks-scraper",
+  "title": "TMview Trademarks Scraper",
+  "users": 28,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0178,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.01924,
+     "SILVER": 0.01852,
+     "GOLD": 0.0178,
+     "PLATINUM": 0.0178,
+     "DIAMOND": 0.0178
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrapes trademark records from TMview by name or keyword and returns each one as a flat row with Nice classes, applicant, status, and filing dates. Filter by IP office or legal status."
+ },
+ {
+  "handle": "jdepablos/trademark-watch-tmview",
+  "title": "Trademark Watch & Monitoring: Opposition Deadline Alerts",
+  "users": 20,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "term-watch",
+  "unit_tiers": {
+   "FREE": 0.035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,match-found,term-watch",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   },
+   "term-watch": {
+    "tiers": {
+     "FREE": 0.035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Term watch"
+   },
+   "match-found": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Match found"
+   }
+  },
+  "desc": "Trademark monitoring and search across USPTO, EUIPO, WIPO and 70+ national offices. Get an alert for each new conflicting application, with Nice classes, applicant, status and opposition deadline, in time to file a trademark opposition. Built for brand owners, IP professionals and AI agents."
+ },
+ {
+  "handle": "nexgendata/legal-mcp-server",
+  "title": "Legal Data MCP \u2014 Case Law, Dockets & Filings for AI Agents",
+  "users": 18,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-call",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bulk-results,tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "tool-call": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   },
+   "bulk-results": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Bulk results"
+   }
+  },
+  "desc": "MCP server exposing case law, court dockets, FINRA BrokerCheck and trademark data as 10 agent tools. Connect Claude, Cursor, n8n or the OpenAI Agents SDK. Not legal advice."
+ },
+ {
+  "handle": "nexgendata/india-trademark-search",
+  "title": "India Trademark Search \u2014 WIPO Brand DB",
+  "users": 12,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,watch-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   },
+   "watch-check": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Watch check"
+   }
+  },
+  "desc": "Trademark due diligence for India: search Indian trademark records via the WIPO Global Brand Database \u2014 mark, owner, status, Nice class, filing & registration dates. Research brand owners and watch for status changes."
+ },
+ {
+  "handle": "parseforge/uspto-trademark-scraper",
+  "title": "USPTO Trademark Assignment Scraper",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0065,
+   "BRONZE": 0.00633,
+   "SILVER": 0.00617,
+   "GOLD": 0.006,
+   "PLATINUM": 0.0054,
+   "DIAMOND": 0.0048
+  },
+  "start_fee": 0.0178,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0065,
+     "BRONZE": 0.00633,
+     "SILVER": 0.00617,
+     "GOLD": 0.006,
+     "PLATINUM": 0.0054,
+     "DIAMOND": 0.0048
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.01924,
+     "SILVER": 0.01852,
+     "GOLD": 0.0178,
+     "PLATINUM": 0.0178,
+     "DIAMOND": 0.0178
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrapes USPTO trademark assignment records by owner name, serial number, or registration number. Returns each assignment as a flat row with assignor, assignee, conveyance type, reel/frame, and execution date."
+ },
+ {
+  "handle": "jungle_synthesizer/dpma-trademark-patent-de-scraper",
+  "title": "DPMA Scraper - German Trademarks & Patents",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.0004,
+   "BRONZE": 0.0004,
+   "SILVER": 0.00036,
+   "GOLD": 0.00032,
+   "PLATINUM": 0.00032,
+   "DIAMOND": 0.00032
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.0004,
+     "BRONZE": 0.0004,
+     "SILVER": 0.00036,
+     "GOLD": 0.00032,
+     "PLATINUM": 0.00032,
+     "DIAMOND": 0.00032
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Scrape DPMAregister for German trademarks, patents, designs, utility models. Mark images, applicant data, opposition history. Brand protection, IP due-diligence, prior-art search."
+ },
+ {
+  "handle": "nexgendata/ttab-trademark-opposition-tracker",
+  "title": "TTAB Opposition Tracker \u2014 Trademark Disputes API",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "TTAB proceeding"
+   }
+  },
+  "desc": "Track TTAB trademark opposition and cancellation proceedings for legal due diligence and brand monitoring \u2014 parties, marks at issue, filing date and status from public TTABVUE data. Clean JSON for IP counsel, brand teams and AI agents."
+ },
+ {
+  "handle": "nexgendata/uk-trademark-search",
+  "title": "UK Trademark Search \u2014 UKIPO Brand Clearance API",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trademark-record": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   }
+  },
+  "desc": "UK brand clearance post-Brexit \u2014 search the GB trademark register by mark, Nice class and status. Structured records with official UKIPO deep-links. Pay per record."
+ },
+ {
+  "handle": "dev00/uspto-trademark-text-check-api",
+  "title": "USPTO Trademark Text Check API",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-text-check",
+  "unit_tiers": {
+   "FREE": 0.1,
+   "BRONZE": 0.005,
+   "SILVER": 0.005,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-text-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-text-check": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark Text Check"
+   }
+  },
+  "desc": "Instantly verify phrases and text blocks against the USPTO database to check for registered or live trademarks under specific classifications."
+ },
+ {
+  "handle": "sian.agency/uspto-trademark-search-status-scraper",
+  "title": "Uspto Trademark Search Status Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search-result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.003,
+   "SILVER": 0.00282,
+   "GOLD": 0.00264,
+   "PLATINUM": 0.00249,
+   "DIAMOND": 0.00234
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dossier-result,search-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "search-result": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.003,
+     "SILVER": 0.00282,
+     "GOLD": 0.00264,
+     "PLATINUM": 0.00249,
+     "DIAMOND": 0.00234
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Search result"
+   },
+   "dossier-result": {
+    "tiers": {
+     "FREE": 0.08,
+     "BRONZE": 0.02,
+     "SILVER": 0.0188,
+     "GOLD": 0.0176,
+     "PLATINUM": 0.0166,
+     "DIAMOND": 0.0156
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Dossier"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search the USPTO register by keyword, owner or class, and pull full TSDR dossiers by serial number: prosecution status and history, owners with addresses, attorneys, goods & services. No API key."
+ },
+ {
+  "handle": "parseforge/ip-australia-trademarks-scraper",
+  "title": "IP Australia Trademarks Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00459,
+   "SILVER": 0.00417,
+   "GOLD": 0.00375,
+   "PLATINUM": 0.003375,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00459,
+     "SILVER": 0.00417,
+     "GOLD": 0.00375,
+     "PLATINUM": 0.003375,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes Australian trademark records from the IP Australia public register by keyword, Nice class, and status. Returns each mark as a flat row with owner, dates, and image URL."
+ },
+ {
+  "handle": "nexgendata/japan-jpo-jplatpat-patents-trademarks",
+  "title": "Japan JPO Patents & Trademarks \u2014 \u7279\u8a31\u691c\u7d22 API",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ip-record",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ip-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "ip-record": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "IP record"
+   }
+  },
+  "desc": "Search Japan JPO patents and trademarks via J-PlatPat. Clean JSON for analysts, quants and AI agents."
+ },
+ {
+  "handle": "dev00/wipo-trademark-search",
+  "title": "WIPO Trademark & Brand Search: Global Madrid Database",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "wipo-trademark-query",
+  "unit_tiers": {
+   "FREE": 0.1,
+   "BRONZE": 0.005,
+   "SILVER": 0.005,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): wipo-trademark-query",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "wipo-trademark-query": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Operational Query Event"
+   }
+  },
+  "desc": "Search 100M+ international trademarks, brand registrations, Madrid System & national IP records from the official WIPO database with full metadata & logos."
+ },
+ {
+  "handle": "scrapers_lat/wipo-madrid-trademarks-scraper",
+  "title": "WIPO Madrid International Trademark Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01425,
+     "SILVER": 0.0135,
+     "GOLD": 0.01275,
+     "PLATINUM": 0.01275,
+     "DIAMOND": 0.01275
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search 1.4M international trademark registrations: mark text, holder name and address, IP representative firm, designated countries, Nice classes, goods and services, refusals, oppositions and expiry dates. JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/canada-cipo-ip-scraper",
+  "title": "Canada CIPO Trademarks Scraper: Owner, Agent & Status",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,ai_extract,ai_summary,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01425,
+     "SILVER": 0.0135,
+     "GOLD": 0.01275,
+     "PLATINUM": 0.01275,
+     "DIAMOND": 0.01275
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_summary"
+   },
+   "ai_extract": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_extract"
+   },
+   "ai_classify": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_classify"
+   }
+  },
+  "desc": "Search the Canadian Trademarks Database (CIPO): mark, application and registration numbers, status, Nice classes, goods and services, owner company and full address, agent, dates and image. Filter by mark, owner, number, Nice class, status or date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/euipo-trademarks-scraper",
+  "title": "EUIPO EU Trademark Scraper: Owner, Nice Class & Status",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,ai_summary,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01425,
+     "SILVER": 0.0135,
+     "GOLD": 0.01275,
+     "PLATINUM": 0.01275,
+     "DIAMOND": 0.01275
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI goods & services summary"
+   },
+   "ai_classify": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI market classification"
+   }
+  },
+  "desc": "Search EU trade marks (EUTM) from the EUIPO register: mark text, application and registration numbers, status, Nice classes, owner company and address, representative contacts, dates, opposition and image. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/indecopi-trademarks-scraper",
+  "title": "INDECOPI Peru Trademark Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01425,
+     "SILVER": 0.0135,
+     "GOLD": 0.01275,
+     "PLATINUM": 0.01275,
+     "DIAMOND": 0.01275
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "ai_classify": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI market classification"
+   }
+  },
+  "desc": "Scrape Peru's INDECOPI trademark register (signos distintivos): trademark name, applicant/owner, Nice class, status, certificate or file number, expiry date and a direct record link. Search many brand names across one or all 45 Nice classes. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "nexgendata/trademark-conflict-watch",
+  "title": "Trademark Conflict Watch \u2014 Brand Monitoring API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "conflict-match",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): conflict-match,watch-run,watched-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "watch-run": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Watch run"
+   },
+   "watched-item": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Watched item checked"
+   },
+   "conflict-match": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Conflict / delta match"
+   }
+  },
+  "desc": "Monitor new trademark filings for conflicts with your brand. Clean JSON for IP counsel, brand teams and AI agents."
+ },
+ {
+  "handle": "nexgendata/hk-trademark-search",
+  "title": "HK Trademark Search \u2014 \u5546\u6a19\u6aa2\u7d22 API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Hong Kong trademark record"
+   }
+  },
+  "desc": "No live data at present: the HK IPD trademark register blocks automated access and the old curated sample was withdrawn. Runs return 0 rows and charge only the start fee. Search the register at ipsearch.ipd.gov.hk."
+ },
+ {
+  "handle": "automation-lab/canadian-trademarks-database-search",
+  "title": "Canadian Trademarks Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.00644,
+   "BRONZE": 0.0056,
+   "SILVER": 0.004368,
+   "GOLD": 0.00336,
+   "PLATINUM": 0.00336,
+   "DIAMOND": 0.00336
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Start"
+   },
+   "item": {
+    "tiers": {
+     "FREE": 0.00644,
+     "BRONZE": 0.0056,
+     "SILVER": 0.004368,
+     "GOLD": 0.00336,
+     "PLATINUM": 0.00336,
+     "DIAMOND": 0.00336
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark exported"
+   }
+  },
+  "desc": "Search official Canadian trademarks by mark, owner or application and registration identifiers. Export status, Nice classes, owner, goods and services, dates and source links for clearance research and portfolio monitoring."
+ },
+ {
+  "handle": "dltik/uspto-trademarks-scraper",
+  "title": "USPTO Trademark Scraper: Search US Trademarks (TMview)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 5e-05,
+  "note": "AMBIGUOUS: 4 recurring, no primary flag",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): applicant-enriched,clearance-analyzed,trademark-detail,trademark-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trademark-result": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Trademark result"
+   },
+   "trademark-detail": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Trademark detail enrichment"
+   },
+   "applicant-enriched": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Owner \u2192 company link"
+   },
+   "clearance-analyzed": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "AI brand-clearance (likelihood of confusion)"
+   }
+  },
+  "desc": "Search US (USPTO) trademarks by brand name, owner, status, Nice class, dates. Get goods & services, application/registration dates, owner, mark image. AI brand-clearance + owner\u2192company. No API key. $0.01/result."
+ },
+ {
+  "handle": "memo23/euipo-trademark-search",
+  "title": "EUIPO Trademark Search \u2014 EU & National Marks, Owners, Classes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark,trademark-details",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trademark": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Trademark record"
+   },
+   "trademark-details": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Full trademark record"
+   }
+  },
+  "desc": "Search EU trademarks by name, owner or number across EUIPO and 80+ national offices. Get status, owner, representative, Nice classes, goods and services, filing, registration and expiry dates. Filter by class, status and mark type, or watch a brand and get only new or changed marks."
+ },
+ {
+  "handle": "jungle_synthesizer/ip-australia-trademark-scraper",
+  "title": "IP Australia Trademark Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Search Australian trademark applications and registrations from IP Australia's Trade Marks Online Search. Filter by name, owner, application number, Nice class, and status to pull mark text, owner, goods & services, filing/registration dates, and current status."
+ },
+ {
+  "handle": "unrivaled_fortress/wipo-global-trademark-brand-watch",
+  "title": "\u26a1 WIPO Global Trademark & Brand Launch Early Intelligence",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0034,
+     "SILVER": 0.003,
+     "GOLD": 0.0026,
+     "PLATINUM": 0.0026,
+     "DIAMOND": 0.0026
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract newly registered international and US trademark filings, word marks, brand owners, and goods/services classifications in real-time. Built for brand protection & domain investors."
+ },
+ {
+  "handle": "accountable_eel/trademark-filing-watch",
+  "title": "Trademark Filing Watch: New USPTO Application Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-filing",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0085,
+   "SILVER": 0.0065,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-filing",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark-filing": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.0085,
+     "SILVER": 0.0065,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "New trademark filing matched"
+   }
+  },
+  "desc": "Watch my brand for similar trademark filings? Get new USPTO and EUIPO trademark applications that contain or resemble your marks, by Nice class. One row per filing with owner, classes and record link. Monitoring bills only new matches; alerts to Slack, Discord or Telegram, or Google Sheets."
+ },
+ {
+  "handle": "nexgendata/trademark-patent-search-api",
+  "title": "USPTO, EUIPO & WIPO Trademark/Patent API \u2014 No API Key",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "uspto-trademark",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cnipa-patent,euipo-trademark,fda-orange-book-patent,google-patent,hk-trademark,india-trademark,ip-document,ip-mcp-tool,jpo-ip,kipo-ip,patentsview-graph,trademark-conflict,ttab-opposition,uk-trademark,uspto-grant-tracked,uspto-patent,uspto-patent-grant,uspto-trademark,wipo-patent",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "uspto-trademark": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "USPTO Trademark record"
+   },
+   "euipo-trademark": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "EUIPO Trademark (EU) record"
+   },
+   "ttab-opposition": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "USPTO TTAB Oppositions record"
+   },
+   "uspto-patent": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "USPTO Patent record"
+   },
+   "wipo-patent": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "WIPO PATENTSCOPE record"
+   },
+   "fda-orange-book-patent": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "FDA Orange Book Patents record"
+   },
+   "jpo-ip": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Japan JPO (J-PlatPat) record"
+   },
+   "patentsview-graph": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "PatentsView Inventor Graph record"
+   },
+   "uspto-patent-grant": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "USPTO Patent Grants record"
+   },
+   "cnipa-patent": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "CNIPA China Patent record"
+   },
+   "hk-trademark": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Hong Kong Trademark record"
+   },
+   "uspto-grant-tracked": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "USPTO Grants Tracker record"
+   },
+   "ip-document": {
+    "tiers": {
+     "FREE": 0.04
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "IP Document RAG record"
+   },
+   "trademark-conflict": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Trademark Conflict Watch record"
+   },
+   "google-patent": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Google Patents record"
+   },
+   "uk-trademark": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "UK IPO Trademark record"
+   },
+   "india-trademark": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "India Trademark record"
+   },
+   "kipo-ip": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Korea KIPO (KIPRIS) record"
+   },
+   "ip-mcp-tool": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "IP MCP Tool record"
+   }
+  },
+  "desc": "Global trademark & patent search across the official registries, in one API. Pick a source \u2014 USPTO, EUIPO, WIPO PATENTSCOPE, UK IPO, CNIPA, JPO, KIPO, Google Patents and 11 more \u2014 and get clean structured IP records by keyword, applicant, class or date. No API key. Pay per record."
+ },
+ {
+  "handle": "scrapers_lat/uspto-ttab-proceedings-scraper",
+  "title": "USPTO TTAB Oppositions & Cancellations Scraper (TTABVUE)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0165,
+   "BRONZE": 0.0162,
+   "SILVER": 0.0159,
+   "GOLD": 0.0156,
+   "PLATINUM": 0.0153,
+   "DIAMOND": 0.015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,details,result,result_lead",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0165,
+     "BRONZE": 0.0162,
+     "SILVER": 0.0159,
+     "GOLD": 0.0156,
+     "PLATINUM": 0.0153,
+     "DIAMOND": 0.015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "result_lead": {
+    "tiers": {
+     "FREE": 0.022,
+     "BRONZE": 0.0216,
+     "SILVER": 0.0212,
+     "GOLD": 0.0208,
+     "PLATINUM": 0.0204,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result_lead"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.0088,
+     "BRONZE": 0.00864,
+     "SILVER": 0.00848,
+     "GOLD": 0.00832,
+     "PLATINUM": 0.00816,
+     "DIAMOND": 0.008
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "details"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.0132,
+     "BRONZE": 0.01296,
+     "SILVER": 0.01272,
+     "GOLD": 0.01248,
+     "PLATINUM": 0.01224,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_summary"
+   },
+   "ai_extract": {
+    "tiers": {
+     "FREE": 0.0132,
+     "BRONZE": 0.01296,
+     "SILVER": 0.01272,
+     "GOLD": 0.01248,
+     "PLATINUM": 0.01224,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_extract"
+   }
+  },
+  "desc": "Search USPTO TTABVUE: trademark oppositions, cancellations, concurrent-use and appeals. Get both parties, counsel of record (name, firm, email, phone), every mark (serial + registration), the full prosecution-history docket and deadlines. Filter by type, party, mark, status and date."
+ },
+ {
+  "handle": "nexgendata/korea-kipo-kipris-plus-patents-trademarks",
+  "title": "Korea KIPO Patents & Trademarks \u2014 \ud2b9\ud5c8 \uac80\uc0c9 API",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ip-record",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ip-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "ip-record": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "IP record"
+   }
+  },
+  "desc": "Search Korea KIPO patents and trademarks via KIPRIS. Clean JSON for analysts, quants and AI agents."
+ },
+ {
+  "handle": "scrapers_lat/uspto-trademarks-scraper",
+  "title": "USPTO Trademark Search Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.0076,
+     "SILVER": 0.0072,
+     "GOLD": 0.0068,
+     "PLATINUM": 0.0068,
+     "DIAMOND": 0.0068
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape US trademark records with mark text, serial and registration number, owner name and address, status, filing and registration dates, goods and services and international classes. Search by wordmark, owner, goods, serial or registration number. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "nexgendata/patents-trademarks-ip-mcp-server",
+  "title": "Patent Search MCP \u2014 Prior Art & Inventor Tools for AI Agents",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-call",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tool-call": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "MCP server exposing patent search, inventor search, patents-by-assignee and full patent detail as agent tools (patents only \u2014 no trademark tools). Connect Claude, Cursor, n8n or the OpenAI Agents SDK."
+ },
+ {
+  "handle": "scrapers_lat/inpi-argentina-trademarks-scraper",
+  "title": "INPI Argentina Trademark Search Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.01425,
+     "SILVER": 0.0135,
+     "GOLD": 0.01275,
+     "PLATINUM": 0.01275,
+     "DIAMOND": 0.01275
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "ai_classify": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_classify"
+   }
+  },
+  "desc": "Search the INPI Argentina trademark register by trademark name or applicant and extract application number (acta), trademark name, owner, Nice class, legal status, mark type, registration/resolution number, filing date and expiry date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "dev00/euipo-trademark-search",
+  "title": "EUIPO Trademark, Design & Case Law Search: Visual Match",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "euipo-query",
+  "unit_tiers": {
+   "FREE": 0.1,
+   "BRONZE": 0.005,
+   "SILVER": 0.005,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): euipo-query",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "euipo-query": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Operational Query Event"
+   }
+  },
+  "desc": "Official EUIPO database API: search 20M+ EU trademarks, Community designs, BoA & CJEU case law decisions, and visual similarity image matching."
+ },
+ {
+  "handle": "nexgendata/patent-trademark-rag",
+  "title": "Patent & Trademark RAG \u2014 IP Docs to Markdown API",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-record",
+  "unit_tiers": {
+   "FREE": 0.04
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document-record": {
+    "tiers": {
+     "FREE": 0.04
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document/chunk"
+   }
+  },
+  "desc": "Convert patent and trademark documents into RAG-ready Markdown chunks. Clean JSON for IP counsel, brand teams and AI agents."
+ }
+]
