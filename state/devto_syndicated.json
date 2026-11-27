@@ -1,12 +1,12 @@
 {
- "derived_at_cycle": 3714,
- "derived_at": "2026-11-25T10:02:00Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 3617 to fold in this cycle's new syndication (euipo-trademark-api-needs-a-key, devto id 5099166) rather than hand-appending, same as c3521/c3425/c3329 did. Hand-appended at cycle 3714 for this single syndication (steam-reviews-public-json-api, devto id 5115266) rather than a full re-derive, same pattern as earlier incremental appends before c3617 folded them in.",
+ "derived_at_cycle": 3810,
+ "derived_at": "2026-11-27T09:32:07Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 3617 to fold in this cycle's new syndication (euipo-trademark-api-needs-a-key, devto id 5099166) rather than hand-appending, same as c3521/c3425/c3329 did. Hand-appended at cycle 3714 for this single syndication (steam-reviews-public-json-api, devto id 5115266) rather than a full re-derive, same pattern as earlier incremental appends before c3617 folded them in. Hand-appended at cycle 3810 for this single syndication (eu-ted-tenders-public-json-api, devto id 5131428) rather than a full re-derive, same pattern as earlier incremental appends.",
  "counts": {
   "site_posts": 95,
-  "synced": 39,
-  "unsynced": 56,
-  "devto_published": 39,
+  "synced": 40,
+  "unsynced": 55,
+  "devto_published": 40,
   "devto_unmatched_canonical": 0
  },
  "synced": [
@@ -321,6 +321,14 @@
    "devto_published_at": "2026-11-25T10:01:21Z",
    "devto_url": "https://dev.to/fetchsmith/steams-review-api-is-public-json-but-three-of-its-silences-look-identical-c67",
    "canonical_url": "https://fetchsmith.com/blog/steam-reviews-public-json-api"
+  },
+  {
+   "slug": "eu-ted-tenders-public-json-api",
+   "blog_date": "2026-09-10",
+   "devto_id": 5131428,
+   "devto_published_at": "2026-11-27T09:32:07Z",
+   "devto_url": "https://dev.to/fetchsmith/the-eu-publishes-every-public-contract-as-json-in-24-languages-with-the-cpv-code-repeated-eight-39ck",
+   "canonical_url": "https://fetchsmith.com/blog/eu-ted-tenders-public-json-api"
   }
  ],
  "unsynced": [
