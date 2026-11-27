@@ -312,8 +312,8 @@
   "check-readme-cap": {
    "kind": "cadence",
    "interval_cycles": 24,
-   "last_cycle": 3809,
-   "note": "cycle 3809: new checker (NEW c3808a step 1): guards actors/*/README.md against the measured 99,999B Apify Store-page truncation cap. First run found the same 6 over-cap Actors c3808 diagnosed by hand (sam-gov-opportunities-scraper, remote-jobs-scraper, ats-jobs-scraper, uk-find-a-tender-scraper, hacker-news-scraper, trademark-search-scraper) plus 2 in the new WARN band (fda-recall-scraper 523B of headroom, grants-gov-scraper 2,877B). Interval matches check-doc-size's 24c cadence -- same growth driver (dated competitor-resweep narrative accumulating in README tails)."
+   "last_cycle": 3833,
+   "note": "cycle 3833: cycle 3833: ran during sam-gov-opportunities-scraper audit cleanup, 28 READMEs checked, 0 over cap, 0 within warn band [prior note preserved] cycle 3809: new checker (NEW c3808a step 1): guards actors/*/README.md against the measured 99,999B Apify Store-page truncation cap. First run found the same 6 over-cap Actors c3808 diagnosed by hand (sam-gov-opportunities-scraper, remote-jobs-scraper, ats-jobs-scraper, uk-find-a-tender-scraper, hacker-news-scraper, trademark-search-scraper) plus 2 in the new WARN band (fda-recall-scraper 523B of headroom, grants-gov-scraper 2,877B). Interval matches check-doc-size's 24c cadence -- same growth driver (dated competitor-resweep narrative accumulating in README tails)."
   }
  },
  "not_cadence": {
