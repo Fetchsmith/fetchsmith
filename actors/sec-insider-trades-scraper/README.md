@@ -521,6 +521,17 @@ and three flat dearer-at-every-tier single-purpose Form 4 scrapers at $0.004/row
 (`epicscrapers/sec-insider-trading-scraper`, `moment-data/sec-insider-transactions-feed`,
 `mooseandraven/sec-edgar-filing-monitor`).
 
+**Twenty-first sweep, checked live 2026-11-27.** Own price re-verified first against the live
+platform record: flat **$0.0018/`result`, no start fee**, unchanged since 2026-09-25. The
+niche's top 10 by users are unchanged in roster from prior sweeps (`constant_quadruped`,
+`constructive_calm`, `ryanclinton/sec-insider-trading`, `scrapemint` and the rest already named
+above) — no new high-user entrant. Diffing the current unnamed-tail list against every
+previously-priced baseline surfaced exactly **one** genuinely new handle:
+`sonic_scraper/sec-insider-trading-tracker` (listed 2026-10-28, 2 users), which bills a `Trade`
+event (unit-matched to our `result`) tiered **$0.0025 FREE → $0.0019 GOLD+** plus a negligible
+$0.00005 Actor-start fee — dearer than our $0.0018 at every tier. **0 new undercutters; pricing
+held.**
+
 ## Notes on the source
 
 - **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather
