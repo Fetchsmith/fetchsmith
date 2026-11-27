@@ -834,29 +834,56 @@ try {
         continue;
       }
       let outcome;
-      try {
-        if (!cookiesPrimed) await primeCookies(Math.min(10000, REQUEST_TIMEOUT_MS));
-        const res = await gotScraping({
-          url: url.href,
-          method: 'GET',
-          cookieJar,
-          proxyUrl,
-          throwHttpErrors: false,
-          retry: { limit: 0 },
-          timeout: { request: REQUEST_TIMEOUT_MS },
-          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-          headers: { referer: SEARCH_PAGE },
-        });
-        const text = typeof res.body === 'string' ? res.body : JSON.stringify(res.body ?? '');
-        // Report the param VOCABULARY, not the asset: a TMview front-end bundle is megabytes of
-        // minified JS and the whole question is only which `f<Name>` keys its own code sends.
-        const names = [...new Set(text.match(/\bf[A-Z][A-Za-z]{2,30}\b/g) ?? [])].sort();
-        outcome = `HTTP ${res.statusCode} bytes=${text.length} fNames(${names.length})=[${names.join(',')}]`;
-      } catch (e) {
-        // Same rule as the POST batch below: one bad path must not cost the whole batch.
-        outcome = `ERROR ${e.message}`;
+      let lastErr;
+      // c3788: a lone GET with no retry/rotation dies on the first bad exit node and reads
+      // exactly like "TMview blocks GET" (measured c3788: 594 ECONNREFUSED / socket hang up on
+      // all 3 paths in the SAME run whose POST control answered totalResults=493). Route through
+      // the same rotate-then-direct ladder fetchPage uses (minus its round-pause escalation --
+      // this is a diagnostic batch, not a buyer-facing walk, so one ladder is enough).
+      for (let attempt = 0; attempt <= PROXY_ROTATIONS; attempt += 1) {
+        if (attempt > 0) {
+          const rotated = attempt < PROXY_ROTATIONS && await rotateProxy();
+          if (!rotated) {
+            if (!proxyUrl) break; // already direct and it still failed
+            proxyUrl = undefined;
+            cookieJar = new CookieJar();
+            cookiesPrimed = false;
+          }
+        }
+        try {
+          if (!cookiesPrimed) await primeCookies(Math.min(10000, REQUEST_TIMEOUT_MS));
+          const res = await gotScraping({
+            url: url.href,
+            method: 'GET',
+            cookieJar,
+            proxyUrl,
+            throwHttpErrors: false,
+            retry: { limit: 0 },
+            timeout: { request: REQUEST_TIMEOUT_MS },
+            signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+            headers: { referer: SEARCH_PAGE },
+          });
+          const text = typeof res.body === 'string' ? res.body : JSON.stringify(res.body ?? '');
+          // Report the param VOCABULARY, not the asset: a TMview front-end bundle is megabytes of
+          // minified JS and the whole question is only which `f<Name>` keys its own code sends.
+          const names = [...new Set(text.match(/\bf[A-Z][A-Za-z]{2,30}\b/g) ?? [])].sort();
+          // Also widen to `.js` asset paths, since the question "which bundle holds the real
+          // param names" can't be answered from an Angular shell whose bundle filenames are
+          // content-hashed -- and a short excerpt, since fNames/js can both come back empty on a
+          // page that is itself just a redirect or an error shell.
+          const jsAssets = [...new Set(text.match(/[\w./-]+\.js\b/g) ?? [])].slice(0, 20);
+          const excerpt = text.slice(0, 300);
+          outcome = `HTTP ${res.statusCode} bytes=${text.length} fNames(${names.length})=[${names.join(',')}] `
+            + `js(${jsAssets.length})=[${jsAssets.join(',')}] excerpt=${JSON.stringify(excerpt)}`;
+          lastErr = null;
+          break;
+        } catch (e) {
+          // Same rule as the POST batch below: one bad path must not cost the whole batch.
+          lastErr = e;
+          outcome = `ERROR ${e.message}`;
+        }
       }
-      log.info(`PROBEGET ${url.href} -> ${outcome}`);
+      log.info(`PROBEGET ${url.href} -> ${outcome}${lastErr ? ' (ladder exhausted)' : ''}`);
     }
   }
   if (probeBodies) {
