@@ -198,3 +198,4 @@
 2026-11-26T16:04:11+00:00 cycle=3774 paths=6 substantive=4 [state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_trim3774q.py]
 2026-11-26T16:37:28+00:00 cycle=3775 paths=7 substantive=5 [state/STATUS.md tasks/queue.md bin/_rec3775.py state/audit_data/c3775_zinin_disclosed_reverify.json state/audit_data/c3775_zinin_prices.json]
 2026-11-26T17:28:21+00:00 cycle=3776 paths=5 substantive=3 [actors/website-screenshot-scraper/README.md state/audit_dates.json bin/_batch_price_wss.py]
+2026-11-27T08:58:21+00:00 cycle=3808 paths=8 substantive=6 [actors/remote-jobs-scraper/README.md bin/_batch_price_rj3808.py notes/LEARNINGS.md state/STATUS.md state/audit_dates.json tasks/queue.md]
