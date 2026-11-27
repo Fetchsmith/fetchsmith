@@ -1,0 +1,478 @@
+[
+ {
+  "handle": "yck69/french-product-recalls",
+  "title": "French Product Recalls (RappelConso) \u2013 Barcode Check & Alerts",
+  "users": 41,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): barcode-check,recall,stats-row",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall"
+   },
+   "barcode-check": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Barcode checked"
+   },
+   "stats-row": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Statistics row"
+   }
+  },
+  "desc": "Every product recall in France from the official RappelConso feed: barcodes, lots, risks, allergens, sale areas, retailers and what to do. Check your barcodes against all recalls, get alerts on new recalls, and statistics by brand, hazard or retailer."
+ },
+ {
+  "handle": "s-r/vin-decoder",
+  "title": "VIN Decoder API - Specs, Recalls, NCAP Safety & EU Data",
+  "users": 60,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vin_decoded",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vin_decoded",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "vin_decoded": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "VIN decoded"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Decode any 17-character VIN into year, make, model, trim, engine and plant, plus NHTSA recalls, owner complaints, NCAP safety ratings, EPA fuel economy and EU type-approval data. One row per VIN, ready for car marketplaces, fleets and insurers."
+ },
+ {
+  "handle": "nexgendata/automotive-mcp-server",
+  "title": "Automotive MCP \u2014 Vehicle Recalls, Complaints & Crash Ratings",
+  "users": 18,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-call",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "tool-call": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "MCP server for NHTSA vehicle safety data: safety recalls, owner complaints and 5-Star crash-test ratings, plus VIN decoding. One charge per successful call; failed or empty calls are free."
+ },
+ {
+  "handle": "neuton/cpsc-product-recalls-scraper",
+  "title": "CPSC Product Recalls Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official U.S. Consumer Product Safety Commission recalls for product safety monitoring, ecommerce compliance, and brand risk research."
+ },
+ {
+  "handle": "neuton/openfda-drug-shortages-scraper",
+  "title": "openFDA Drug Shortages Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract FDA drug shortage records for current shortage monitoring, supply-chain workflows, pharma operations, and healthcare procurement."
+ },
+ {
+  "handle": "neuton/openfda-drugsfda-applications-scraper",
+  "title": "openFDA Drugs@FDA Applications Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Drugs@FDA application, sponsor, product, and submission records for pharmaceutical regulatory intelligence and drug approval research."
+ },
+ {
+  "handle": "neuton/openfda-food-adverse-events-scraper",
+  "title": "openFDA Food Adverse Events Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract FDA CAERS food adverse event reports from openFDA for product safety monitoring, supplement research, and consumer-health risk analysis."
+ },
+ {
+  "handle": "neuton/openfda-drug-labels-scraper",
+  "title": "openFDA Drug Labels Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official FDA drug labeling records, warnings, indications, dosage text, manufacturers, product NDCs, and SPL identifiers."
+ },
+ {
+  "handle": "neuton/openfda-device-udi-scraper",
+  "title": "openFDA Device UDI Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract FDA medical device UDI records for device identification, product-code enrichment, manufacturer intelligence, and compliance workflows."
+ },
+ {
+  "handle": "neuton/openfda-drug-adverse-events-scraper",
+  "title": "openFDA Drug Adverse Events Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search FDA FAERS drug adverse event reports through openFDA by drug name, reaction, country, seriousness, or report date. Export safety report IDs, drugs, reactions, outcomes, dates, and demographics."
+ },
+ {
+  "handle": "neuton/openfda-device-adverse-events-scraper",
+  "title": "openFDA Device Adverse Events Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search FDA MAUDE medical device adverse event records through openFDA. Export report numbers, event types, dates, manufacturers, device names, patient outcomes, and narrative text."
+ },
+ {
+  "handle": "samwise.agency/fda-device-maude",
+  "title": "FDA MAUDE \u2014 Medical Device Adverse Event & Malfunction Reports",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search FDA MAUDE (Manufacturer and User Facility Device Experience) adverse event reports for medical devices. Report numbers, device names, manufacturer names, event types, dates, patient outcomes, and product problems. Official openFDA data, no API key. $2 per 1,000 results."
+ },
+ {
+  "handle": "samwise.agency/openfda-drug-labels",
+  "title": "FDA Drug Labels \u2014 Indications, Warnings & Ingredients",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search FDA drug labeling data from openFDA by brand name, generic name, route, or manufacturer. Indications, warnings, dosage, active/inactive ingredients, and more. Official openFDA data, no API key. $2 per 1,000 results."
+ }
+]

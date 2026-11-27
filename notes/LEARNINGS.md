@@ -7344,3 +7344,41 @@ thing its body reports (which paragraphs to fix) — say which half you are trus
 **Transferable:** when you relocate text to shrink a file, re-ask which checkers were reading that text. A checker's scope is usually a glob over the file you just changed, and moving content out of the glob silently converts "verified clean" into "unverified" with no output change anywhere -- the checker keeps printing clean, on less.
 
 **Cycle 3813 -- the `NEW c3808a` relocate-to-`COMPETITORS.md` method assumes the dated history breaks into separable paragraphs, and that assumption fails on at least one Actor.** The four job-board-family Actors fixed at c3809/c3811/c3812 (`sam-gov-opportunities-scraper`, `remote-jobs-scraper`, `ats-jobs-scraper`) each write one self-contained paragraph per audit cycle, so the fix was "pick the dated paragraphs, move them, leave a pointer." `trademark-search-scraper`'s Pricing section instead reads as one continuous narrative where each resweep explicitly revises or supersedes the previous one inline ("the previous version of this section called X... that is false and is withdrawn", "SUPERSEDED 2026-11-25", "the revisit trigger has now fired") -- there is no clean per-paragraph seam, only a clean seam between audits (the boundary between two full-resweep headers). **The fix generalizes but the unit of relocation does not: find the structural shape of the specific README before assuming the previous fix's exact method (pick-paragraphs vs. cut-at-last-N-audits) transfers.** Also worth re-deriving fresh each time: cross-reference repointing only needs to touch references in the *kept* text that point *into* the moved text -- references wholly inside the moved block, or wholly inside the kept block, need no edit, and checking this both ways (`grep` for "above"/"below"/"named above" in the new README, not just in the moved block) caught two repoints the first pass missed because they were split across a line-wrap.
+
+## Cycle 3820 — the Store-search count drop is a one-time index change, and it is now proven stable
+
+Four consecutive cycles each found a sharp fall in `bin/niche-size`'s matched count on a
+different, unrelated niche: substack 396→181 (c3817), grants-gov 180→139 (c3818), eu-ted
+800→179 (c3819), fda-recall 657→336 (c3820). c3817–c3819 all recorded it honestly as
+"cause unconfirmed". **c3820 ran the control that settles it: re-measuring the grants-gov
+niche two cycles after c3818 returned exactly 139 again — the identical number.** A
+ranking-variance or load-dependent explanation would not reproduce to the digit, so the
+new level is a stable step change in how many results Apify's Store search returns per
+query, not churn in the listings and not a tool regression.
+
+What this costs us, and the rule it implies:
+
+- **Niche-match counts recorded before 2026-11-27 are not comparable to counts recorded
+  after it.** Every README on this fleet carries a dated trail of "N niche matches, up
+  from M at the last sweep" paragraphs. Across that boundary those deltas are artifacts.
+  Say so in the sweep paragraph rather than letting the next reader infer the niche
+  halved; `fda-recall-scraper`'s eighteenth sweep is the worked example.
+- **It does not touch prices, handles or scope findings.** Those are read per-rival from
+  `GET /v2/acts/<owner>~<slug>` pricing records, which the search index never feeds. So a
+  sweep's *conclusions* survive the discontinuity even when its *counts* do not.
+- `check-competitor-claims` does not police count claims, only user counts and paragraph
+  dates, so nothing will flag a stale "up from M" claim for you.
+- The drop is broad but hardest at the bottom: on the fda niche the ≥2-user unnamed cohort
+  went 455→233 (-49%) while the 1-user tail went ~85→7 (-92%). c3819's TED reading (≥3-user
+  cohort 28→27, essentially flat) is the same shape seen from the other end — the cohorts
+  we actually price are the least affected, which is why no sweep's undercutter list moved.
+
+## Cycle 3820 — a relocated-history synthesis inherits no verified-date, and the claims checker will say so
+
+The `CLOSED c3808a` `COMPETITORS.md` relocation replaces a long dated trail with one
+compact synthesis paragraph. That paragraph names rivals, so `check-competitor-claims`
+treats it as a competitor paragraph and demands a `verified YYYY-MM-DD` token — which the
+moved text took with it. Both of this cycle's new paragraphs flagged UNDATED and cost a
+second build to fix. **When relocating, end the synthesis with its own explicit
+"verified live <date>" sentence, and run `check-competitor-claims --only <slug>` before
+`apify push`, not after.**
