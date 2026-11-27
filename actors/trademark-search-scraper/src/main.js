@@ -192,6 +192,34 @@ if (unknownTmTypes.length) {
     + 'the real but unconfirmed values this filter is known to have, but if it is a typo it will silently match nothing.',
   );
 }
+// Date-range filters (live-confirmed cycle 3790/3791 by reading TMview's own front-end bundle,
+// after 17 guessed names came back negative at cycle 3784 -- see `tasks/queue.md` `NEW c3744a`):
+// `adFrom`/`adTo` (application/filing date) and `rdFrom`/`rdTo` (registration date) are real,
+// no `f`-prefix, unlike the 4 enum filters above — TMview's own front-end names them this way —
+// HONORED server-side filters, re-verified a second cycle with a different search term and a
+// narrower date window nested inside a wider one (per the two-cycle rule, `notes/PLAYBOOK.md`).
+// TMview wants a plain YYYY-MM-DD string; a value that doesn't parse as one risks failing the
+// WHOLE request rather than just this filter (unlike an unrecognised office/status/type code,
+// which TMview silently no-ops), so a malformed date is dropped locally with a warning, not sent.
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+function parseDateInput(name, raw) {
+  const s = String(raw ?? '').trim();
+  if (!s) return '';
+  if (!DATE_RE.test(s)) {
+    log.warning(`"${name}" value "${s}" is not a YYYY-MM-DD date — dropped rather than sent, since a malformed date could fail the whole search instead of just this filter.`);
+    return '';
+  }
+  return s;
+}
+const applicationDateFrom = parseDateInput('applicationDateFrom', input.applicationDateFrom);
+const applicationDateTo = parseDateInput('applicationDateTo', input.applicationDateTo);
+const registrationDateFrom = parseDateInput('registrationDateFrom', input.registrationDateFrom);
+const registrationDateTo = parseDateInput('registrationDateTo', input.registrationDateTo);
+// `registrationNumber` (live-confirmed same cycles as the date filters above, with a real
+// positive control both times — a non-existent number returns zero, a real one returns the
+// matching mark(s), not just "any non-empty value narrows the set").
+const registrationNumber = String(input.registrationNumber ?? '').trim();
+
 // TMview's `criteria` param (verified live cycle 1866, brute-forced the whole alphabet plus
 // lowercase/empty against the live endpoint): only three values return 200 at all -- `C`
 // (contains, pure substring, no word boundary -- what this Actor always sent before this input
@@ -468,6 +496,11 @@ if (watchMode) {
     searchTerm, offices, niceClasses, statuses,
     ...(matchMode !== 'contains' ? { matchMode } : {}),
     ...(tmTypes.length ? { tmTypes } : {}),
+    ...(applicationDateFrom ? { applicationDateFrom } : {}),
+    ...(applicationDateTo ? { applicationDateTo } : {}),
+    ...(registrationDateFrom ? { registrationDateFrom } : {}),
+    ...(registrationDateTo ? { registrationDateTo } : {}),
+    ...(registrationNumber ? { registrationNumber } : {}),
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
@@ -633,6 +666,11 @@ async function fetchPage(page) {
   if (niceClasses.length) body.fNiceClass = niceClasses;
   if (statuses.length) body.fTMStatus = statuses;
   if (tmTypes.length) body.fTMType = tmTypes;
+  if (applicationDateFrom) body.adFrom = applicationDateFrom;
+  if (applicationDateTo) body.adTo = applicationDateTo;
+  if (registrationDateFrom) body.rdFrom = registrationDateFrom;
+  if (registrationDateTo) body.rdTo = registrationDateTo;
+  if (registrationNumber) body.registrationNumber = registrationNumber;
   // Diagnostic probe only (see probeBodies above); null on every buyer-reachable path.
   if (probeExtra) Object.assign(body, probeExtra);
 

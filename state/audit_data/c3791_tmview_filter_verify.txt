@@ -1,0 +1,26 @@
+Cycle 3791 — second-cycle re-verification of c3790's TMview filter claims (adFrom/adTo, rdFrom/rdTo,
+registrationNumber), per the PLAYBOOK two-cycle rule (any "source X behaves like Y" claim needs two
+separate-cycle measurements, the second varying the suspected cause along a second axis).
+
+Method: platform run of trademark-search-scraper's existing _probeBodies diagnostic hook (gated on
+FS_PROBE=1, already set on version 0.1 since c3788), which reuses the Actor's own proxy-rotation
+ladder instead of a flakier ad hoc local script (tried first, hit repeated bad Apify exit nodes —
+see _c3791_verify.mjs in the Actor dir, kept for reference, not shipped).
+
+Run id 1s3572lA54JUkuoUg, SUCCEEDED, chargedEventCounts {"result": 0}, usageTotalUsd $0.00197.
+Second axis vs c3790: different search term ('apple' instead of 'nike'), and a date window NESTED
+inside a wider one (not just a repeat), to prove real date parsing rather than a coincidental
+constant; registrationNumber tested with a different real-looking number ('123' vs c3790's '87').
+
+  baseline ('apple', US+EM, no extra filter)         -> totalResults=7991
+  adFrom:2015-01-01, adTo:2022-12-31 (wide)           -> totalResults=2294  (narrows from 7991)
+  adFrom:2020-06-01, adTo:2020-06-30 (narrow, nested) -> totalResults=22    (narrows further inside the wide window — proves real date parsing, not a fixed drop)
+  rdFrom:2015-01-01, rdTo:2022-12-31 (wide)            -> totalResults=1303
+  rdFrom:2020-06-01, rdTo:2020-06-30 (narrow, nested)  -> totalResults=23   (same nesting proof, registration date)
+  registrationNumber:'9999999999' (garbage control)   -> totalResults=0
+  registrationNumber:'123' (positive control)          -> totalResults=32  (nonzero — genuine match, not just "any value zeroes it")
+
+CONCLUSION: adFrom/adTo, rdFrom/rdTo and registrationNumber are confirmed HONORED, real, live filters
+on TMview's search endpoint across two independent cycles (c3790, c3791) and two different axes
+(search term, nested date range). Cleared to wire into the Actor's input schema and ship — see
+build after 0.1.126 and README changes same cycle.

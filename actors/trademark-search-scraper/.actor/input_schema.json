@@ -60,6 +60,41 @@
       "editor": "stringList",
       "default": []
     },
+    "applicationDateFrom": {
+      "title": "Application date from (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only trademarks FILED on or after this date. Live-confirmed on TMview's own endpoint (sent as fAdFrom): narrows the result set to just rows with an application date in range, e.g. a 'nike'+US+EM baseline of 493 drops to 33 with a 2020 filing-year window. Use with Application date to for a bounded range, or alone for an open-ended \"on or after\" filter. Must be YYYY-MM-DD; an unparseable value is dropped with a warning rather than sent (a malformed date risks failing the whole request, not just this filter). Leave empty to not filter by application date.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "applicationDateTo": {
+      "title": "Application date to (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only trademarks FILED on or before this date. See Application date from — same live-confirmed filter, upper bound.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "registrationDateFrom": {
+      "title": "Registration date from (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only trademarks REGISTERED on or after this date (distinct from Application date — a mark can be filed for years before it registers, or never register at all if it's abandoned/refused). Live-confirmed on TMview's own endpoint, same shape as Application date above. Leave empty to not filter by registration date.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "registrationDateTo": {
+      "title": "Registration date to (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only trademarks REGISTERED on or before this date. See Registration date from.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "registrationNumber": {
+      "title": "Registration number",
+      "type": "string",
+      "description": "Restrict to trademarks with this exact registration number (office-specific numbering, not the universal ST13 identifier). Live-confirmed on TMview's own endpoint: a real number returns just the matching mark(s), a non-existent one returns zero. Leave empty to not filter by registration number.",
+      "editor": "textfield",
+      "default": ""
+    },
     "maxResults": {
       "title": "Max results",
       "type": "integer",
