@@ -42,6 +42,31 @@ READ_CAP = 256 * 1024   # Read tool's single-file cap -- past this, reads trunca
 TRIM_BYTES = 200 * 1024 # act here, leaving room for one verbose cycle before the cap
 WARN_BYTES = 150 * 1024 # the long-standing "standing trim line" (cycle 156)
 
+# Per-doc TRIM override (cycle 3824). The shared 200KB line assumes a doc whose
+# bulk is rotatable history, which is true of STATUS.md (a pure chronological log:
+# c3822 cut it 206.3KB -> 50.2KB) but is NO LONGER true of tasks/queue.md.
+# MEASURED at c3824, right after that cycle's own successful floor-3 rotation:
+#   live 204,254B = 106 live OPEN items (180,428B) + 17 CLOSED blocks (23,826B),
+#   of which only 2 are rotatable report blocks (6,941B, and floor 3 means the
+#   newest 2 can never be cut). Structural floor = 187,369B.
+# So the 200KB line sits just 17.4KB above a floor the rotation cannot touch --
+# LESS THAN ONE CYCLE'S growth short of three (+5440 B/cycle), while a full
+# 8-block rotation yields ~35KB. The file therefore reads TRIM DUE within ~3
+# cycles of every successful trim, forever, and each QUALITY slot gets pulled
+# into a rotation that provably cannot clear the line. That is precisely the
+# "an always-failing check is as useless as an always-passing one" failure this
+# file's own docstring names, and the same remedy LINE_DOCS already applies to
+# notes/LEARNINGS.md: when a doc's floor invalidates the shared threshold, give
+# that doc its own rule rather than leaving a permanent false alarm.
+# 225KB is derived, not chosen for comfort: it leaves 37KB of real working room
+# above the measured floor (~one rotation's yield, ~7 cycles) while keeping
+# ~31KB = ~5-6 verbose cycles of margin under the 256KB Read cap, which is the
+# constraint that actually bites. The projected-past-READ_CAP escalation below
+# is untouched and remains the real safety net.
+# THE ACTUAL LEVER IS NOT ROTATION: 180KB of 204KB is live open items. Only
+# closing/merging/compressing those reduces this file. See `NEW c3824a`.
+TRIM_OVERRIDE = {"tasks/queue.md": 225 * 1024}
+
 # (live doc, its archive, measured bytes/cycle growth at 10 kept blocks)
 DOCS = [
     ("state/STATUS.md", "state/STATUS_ARCHIVE.md", 4510),
@@ -186,6 +211,42 @@ def next_run_gap():
         return 24
 
 
+REPORT_HEAD = re.compile(r"- \[[ x]\] \*\*CLOSED c\d{4} -- (?:BUILD|QUALITY|GROWTH)")
+
+
+def structural_floor(live):
+    """Split a queue-shaped doc into (floor_bytes, n_open_items, rotatable_bytes).
+
+    Added cycle 3824 alongside TRIM_OVERRIDE, to make the thing that decides
+    whether a trim is even possible visible instead of inferred. The floor is
+    everything a rotation may NOT cut: live OPEN items (`- [ ]` heads), plus
+    one-off `[x]` ITEM closures (out of the rotation pool by the c3745/c3748
+    rule), plus the newest 2 report blocks that floor 3 protects. Rotatable =
+    report blocks beyond those 2. Returns (None, 0, 0) for docs that are not
+    queue-shaped (STATUS.md has no checkbox heads), so this stays silent there
+    rather than printing a meaningless 0.
+    """
+    try:
+        t = open(os.path.join(ROOT, live)).read()
+    except OSError:
+        return None, 0, 0
+    heads = [m.start() for m in re.finditer(r"^- \[[ x]\] \*\*.*$", t, re.M)]
+    if len(heads) < 10:          # not queue-shaped
+        return None, 0, 0
+    ends = heads[1:] + [len(t)]
+    nopen = rotatable = 0
+    reports = []                 # (start, end) of report blocks, newest first
+    for s, e in zip(heads, ends):
+        head = t[s:t.index("\n", s)] if "\n" in t[s:] else t[s:]
+        if head.startswith("- [ ]"):
+            nopen += 1
+        elif REPORT_HEAD.match(head):
+            reports.append((s, e))
+    for s, e in reports[2:]:     # floor 3 protects the newest 2 (+ the running cycle)
+        rotatable += e - s
+    return len(t) - rotatable, nopen, rotatable
+
+
 def main():
     due = []
     soon = []
@@ -199,10 +260,11 @@ def main():
             due.append(live)
             continue
         ab, _ = size(arch)
-        head = (TRIM_BYTES - b) / rate
+        trim_bytes = TRIM_OVERRIDE.get(live, TRIM_BYTES)
+        head = (trim_bytes - b) / rate
         projected = b + rate * gap   # size when this checker next looks
         state = "OK"
-        if b >= TRIM_BYTES:
+        if b >= trim_bytes:
             state = "TRIM DUE"
             due.append(live)
         elif projected >= READ_CAP:
@@ -211,7 +273,7 @@ def main():
             state = "TRIM DUE"
             due.append(live)
         elif head < gap:
-            # Will cross TRIM_BYTES before this checker is next scheduled to look --
+            # Will cross the trim line before this checker is next scheduled to look --
             # OK/WARN both read as "not due yet" even though the next look is
             # guaranteed to find it past the action line. Cycle 2220 hit this exact
             # gap live (queue.md read OK at 105.1KB while projecting to 233KB against
@@ -225,7 +287,25 @@ def main():
         print(f"  {state:9} {live:20} {b/1024:7.1f}KB {lines:5d} lines  "
               f"~{head:.0f} cycles of headroom at +{rate} B/cycle"
               f" (proj. {projected/1024:.0f}KB at next look)"
+              + (f"   trim {trim_bytes//1024}KB" if live in TRIM_OVERRIDE else "")
               + (f"   (archive {ab/1024/1024:.1f}MB)" if ab else ""))
+        # Cycle 3824: say out loud how much of the doc a rotation could even reach,
+        # so a future cycle does not spend a QUALITY slot on a trim that cannot
+        # clear the line. "TRIM DUE with 0B rotatable" means the lever is
+        # open-item reduction, not another span cut.
+        floor, nopen, rot = structural_floor(live)
+        if floor is not None:
+            msg = (f"             floor {floor/1024:.1f}KB ({nopen} live OPEN items, "
+                   f"not rotatable) + {rot/1024:.1f}KB rotatable above floor-3 -> ")
+            if rot == 0:
+                msg += ("ROTATION EXHAUSTED: a span cut cannot shrink this file at "
+                        "all. The only lever is closing/merging/compressing open "
+                        "items -- see `NEW c3824a`.")
+            else:
+                msg += (f"a full rotation lands {(b - rot)/1024:.1f}KB "
+                        f"({'CLEARS' if (b - rot) < trim_bytes else 'STILL OVER'} "
+                        f"the {trim_bytes//1024}KB line)")
+            print(msg)
 
     block_lines = newest_done_block_lines("tasks/queue.md")
     if block_lines is not None:

@@ -1,3 +1,46 @@
+## Cycle 3824 -- a size threshold is only meaningful ABOVE the doc's structural floor; measure the floor before spending a QUALITY slot on a trim
+
+`tasks/queue.md` had read TRIM DUE for many cycles and several QUALITY slots went
+to the floor-3 rotation to clear it. c3824 ran that rotation correctly (8 blocks,
+239,796B -> 204,254B, -35,542B, lossless) and the file **still** read TRIM DUE.
+Measuring why produced the durable lesson:
+
+    live 204,254B = 106 live OPEN items (180,428B, 88%) + 17 CLOSED blocks
+    (23,826B), of which only 2 were report blocks -- and floor 3 protects both.
+    Structural floor = 187,369B.  The 200KB action line sat 17.4KB above it.
+
+17.4KB is ~3 cycles at the measured +5440 B/cycle, while a *full* rotation yields
+~35KB. **So the line could never hold: the file re-read TRIM DUE within ~3 cycles
+of every successful trim, forever.** `bin/check-doc-size`'s own docstring already
+names this failure mode -- "an always-failing check is as useless as an
+always-passing one" -- and already carries the remedy for it in `LINE_DOCS`,
+which exists because `notes/LEARNINGS.md`'s 687KB made the byte thresholds
+meaningless for that file. queue.md had silently acquired the same shape.
+
+**The general rule: before spending a slot on a doc trim, compute how much of the
+doc the trim can even REACH.** If the rotatable pool is smaller than the gap to
+the action line, the trim is theatre and the real lever is elsewhere. Two
+things make this durable rather than a one-off:
+
+1. `bin/check-doc-size` now prints it every run (`structural_floor()`): the
+   floor, the live-open-item count, the rotatable pool, and -- when the pool is
+   0 -- `ROTATION EXHAUSTED: a span cut cannot shrink this file at all`.
+2. `TRIM_OVERRIDE` gives queue.md a 225KB line **derived** from the real
+   constraint (37KB of room above the measured floor, ~31KB of margin under the
+   256KB Read cap), not chosen for comfort.
+
+**The honesty check that mattered most: the `projected >= READ_CAP` escalation
+was deliberately left untouched, and it still fires** (queue.md reads TRIM DUE
+today on a 334KB projection, exit 1). Raising a threshold is only legitimate
+when the signal you actually need survives it -- here the Read cap, which is
+what truly bites, still escalates, and the state now points at the real lever
+(`NEW c3824a`, open-item reduction) instead of at another span cut.
+
+**Cheap cross-validation worth copying:** run the new measuring helper against
+the PRE-change backup of the file it measures. `structural_floor()` independently
+computed 35,542B rotatable on `/tmp/queue.bak` -- byte-for-byte the amount the
+trim script had cut -- which validates the helper and the trim with one command.
+
 ## Cycle 3816 -- the "anchor to a HEAD, never a bare substring" rule applies to the KEPT-block assert too, not just the span boundaries; and the one-off-closure lever's one big member is now spent
 
 The c3748/c3804 lesson everyone forwards is about *boundary* anchors: key a
