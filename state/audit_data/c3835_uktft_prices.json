@@ -1,0 +1,2478 @@
+[
+ {
+  "handle": "adaptive_labs/uk-eu-tenders-monitor",
+  "title": "UK & EU Public Tenders & Contracts Monitor",
+  "users": 2,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Free tender alerts from Contracts Finder, Find a Tender and TED. Filter public sector contracts by keyword, CPV, value, region and deadline. Open bids and awards."
+ },
+ {
+  "handle": "agentic_solutions/uk-public-tenders-tracker",
+  "title": "UK Tenders & Government Contracts \u2013 Contracts Finder + FTS",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Track UK tenders and government contracts from the official Contracts Finder and Find a Tender open data. Filter by keyword, CPV, value, region and deadline, with daily new-or-changed alerts. OGL v3 data. Not affiliated with or endorsed by the Cabinet Office."
+ },
+ {
+  "handle": "agents001/uk-public-contracts-feed",
+  "title": "UK Tenders Scraper: Government Contracts and Winners",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "contract-award",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002,
+   "SILVER": 0.00175,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): contract-award,tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Scrape UK tenders and UK government contracts: award winners with Companies House number, location and SME flag, buyer, value, CPV codes and notice link, plus open tenders. Covers UK contract awards from Find a Tender (Procurement Act 2023) and Contracts Finder. Daily mode returns only new records."
+ },
+ {
+  "handle": "ahmad_mahameed/uk-find-a-tender",
+  "title": "UK Find a Tender Scraper (Government Contracts)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Get UK public sector tenders, contract awards and pipeline notices from the official Find a Tender service. Filter by keyword, CPV code, region, value and deadline. Export to Excel, CSV or JSON, or schedule daily alerts."
+ },
+ {
+  "handle": "amygraphics/uk-gov-tenders-scraper",
+  "title": "UK Government Tenders \u2014 Public Sector Notices (MCP)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-extracted",
+  "unit_tiers": {
+   "FREE": 0.0008
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Official Find a Tender Service (UK public procurement): open tenders, awards & pipelines with buyer + contact emails free, stage-normalized, value/CPV/buyer filters. Monitor mode = daily new-tenders digest. No API key, official OCDS feed. MCP-ready."
+ },
+ {
+  "handle": "amygraphics/uk-tenders-monitor",
+  "title": "UK Tenders Monitor: Contracts Finder Alerts (MCP)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "uk-tender-notice",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): uk-tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "USE THIS ACTOR for UK public procurement: Contracts Finder OCDS notices (buyer, CPV, value, deadline, SME flags) \u2014 search by keyword/date or monitor keywords with new-tender alerts. No key. MCP-ready."
+ },
+ {
+  "handle": "aperture/eu-uk-procurement-award-signal-scraper",
+  "title": "Public Procurement & Tender Award Scraper (UK, EU TED & BOAMP)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-signal-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): buying-signal-enriched,job-signal-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Find B2B companies that just won government and public-sector contracts across the UK (Find a Tender / Contracts Finder), France (BOAMP), Germany, Netherlands, Belgium, and Austria (EU TED). Resolves winning vendor domains and extracts verified emails. Pay $0.008 only for verified firstname.lastname"
+ },
+ {
+  "handle": "atesen-software/eu-uk-public-tenders-monitor",
+  "title": "EU & UK Public Tenders Scraper (TED + Find a Tender)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search and monitor EU (TED) and UK (Find a Tender, Contracts Finder) public tenders through official open APIs. Filter by keyword, CPV code, country, notice type and value. Monitor mode returns only new or changed tenders. No contact fields; e-mails and phones in texts are masked."
+ },
+ {
+  "handle": "avorelis/uk-public-tenders",
+  "title": "UK Public Tenders",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Find open UK public sector tenders and upcoming contracts from the official Contracts Finder API. Filter by keyword, CPV, region, value and SME suitability."
+ },
+ {
+  "handle": "badboxx_newlife/uk-contracts-finder-scraper",
+  "title": "UK Contracts Finder Scraper: Public Tenders & Buyers",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape UK public tenders from Contracts Finder: buyer, value, CPV category, deadline and notice URL. No API key, no personal data."
+ },
+ {
+  "handle": "best_apis/government-tenders-scraper",
+  "title": "Government Tenders Scraper: UK, EU TED, SAM.gov",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Find new public procurement tenders and contract awards from UK Contracts Finder, Find a Tender, EU TED and SAM.gov in one feed. Keyword and CPV filters, open deadlines, daily tender alerts."
+ },
+ {
+  "handle": "bloodyslav/public-tender-monitor",
+  "title": "Public Tender Monitor (EU TED + UK)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "New public tenders from the EU's TED and the UK's Find a Tender and Contracts Finder, from their official open APIs. Filter by keyword, CPV code, country and value; get only new tenders on each scheduled run."
+ },
+ {
+  "handle": "bogdiehard/uk-contracts-finder-scraper",
+  "title": "UK Contracts Finder Scraper: Public Tenders & Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.006,
+   "SILVER": 0.0051,
+   "GOLD": 0.0042,
+   "PLATINUM": 0.0042,
+   "DIAMOND": 0.0042
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Pulls UK public-sector tenders, contract awards and planning notices from the official Contracts Finder API, with buyer contacts, CPV codes, values, deadlines and winning suppliers."
+ },
+ {
+  "handle": "bogdiehard/uk-find-a-tender-scraper",
+  "title": "UK Find a Tender Scraper: High-Value Public Contracts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0028,
+   "BRONZE": 0.0028,
+   "SILVER": 0.00238,
+   "GOLD": 0.00196,
+   "PLATINUM": 0.00196,
+   "DIAMOND": 0.00196
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Pulls UK high-value public tenders, contract awards and planning notices from the official Find a Tender API, with lots, buyer contacts, CPV codes, values, deadlines and winning suppliers."
+ },
+ {
+  "handle": "boubap/uk-tenders-scraper",
+  "title": "UK Tenders Scraper: Find a Tender Public Procurement API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.0035,
+   "SILVER": 0.002975,
+   "GOLD": 0.002625,
+   "PLATINUM": 0.002625,
+   "DIAMOND": 0.002625
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Returns UK public tenders from Find a Tender, the official UK procurement service: open calls for tender, contract awards, pipeline notices, CPV codes, deadlines, values and buyers. Filter by keyword, CPV, region, value and date. No API key."
+ },
+ {
+  "handle": "cazadores/government-tenders",
+  "title": "EU & UK Public Tenders Scraper - TED & Find a Tender",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0014,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Search public procurement tenders and contract awards from TED (EU), UK Find a Tender and Contracts Finder in one clean format. Filter by keyword, CPV code, country, value and deadline. Official open data, no API key. Ideal for daily tender alerts."
+ },
+ {
+  "handle": "coherent_edelweiss/uk-public-tenders-contracts-finder",
+  "title": "UK Public Tenders & Contract Awards Lead Enricher",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-structured-summary,result-scraped,verified-contact-enriched",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": ""
+ },
+ {
+  "handle": "crawlwren/uk-eu-tenders",
+  "title": "UK Tenders API: Find a Tender, Contracts Finder & EU TED",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Daily UK and EU government tenders and contract awards from the official Find a Tender, Contracts Finder and TED APIs, in one schema with deadline countdowns. Filter by keyword (AI, software, construction), CPV, stage, value and country. No API key, no personal data. $2 per 1,000."
+ },
+ {
+  "handle": "dami_studio/rfp-tender-fit-monitor",
+  "title": "RFP & Tender Monitor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fit-scored-basic",
+  "unit_tiers": {
+   "FREE": 0.03,
+   "BRONZE": 0.0295,
+   "SILVER": 0.029,
+   "GOLD": 0.0285,
+   "PLATINUM": 0.0285,
+   "DIAMOND": 0.0285
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): digest-generated,fit-scored-ai,fit-scored-basic,source-checked,tender-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "RFP and tender monitor for public tenders on TED (EU), UK Find a Tender and SAM.gov. Each new notice is scored bid, maybe or no-bid against your capabilities, certifications, regions and contract size, with the reason, a fit score, eligibility flags and deadline risk. $33 per 1,000 new tenders."
+ },
+ {
+  "handle": "data-done-right/government-contracts-finder",
+  "title": "Tender Search & Government Contracts Finder: US, UK & EU TED",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,opportunity",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Tender search across SAM.gov, USAspending.gov, UK Find a Tender and EU TED in one clean feed. Find open government tenders and awarded contracts; filter by keyword, NAICS or CPV code, country, deadline and value, and get only new notices since your last run as daily bid alerts."
+ },
+ {
+  "handle": "devteamdrew/uk-public-tenders",
+  "title": "UK Government Tenders Scraper \u2013 Contracts Finder, Find a Tender",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.003,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK tenders scraper for Contracts Finder and Find a Tender (FTS): every new UK government tender, contract opportunity and award in one feed. Filter by keyword, CPV code, value, region, deadline and SME suitability. Official open APIs, no login. Pay per result."
+ },
+ {
+  "handle": "dobus/eu-uk-public-tender-intelligence-api",
+  "title": "EU & UK Public Tender Intelligence API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search EU public procurement notices (TED) by keyword, CPV code, buyer country, value, and date. Returns normalized tender rows."
+ },
+ {
+  "handle": "euroscrape/eu-public-tenders",
+  "title": "EU & UK Public Tenders: TED, BOAMP API, Find a Tender & Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Public tenders Europe and UK tenders: tender notices from TED, French appels d'offres (BOAMP API), contract awards (DECP), German Ausschreibungen and UK Find a Tender. By keyword, country, CPV code, value. Deadlines, buyer contacts, winners. Tender monitoring, tenders Excel, daily tender alerts."
+ },
+ {
+  "handle": "exceptional_nugget/ocds-tender-opportunity-monitor",
+  "title": "OCDS Tender Opportunity & Deadline Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-source-checked",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-source-checked",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Find relevant tenders in Contracts Finder or supplied OCDS release feeds. Filter keywords and CPV codes, inspect deadlines and detect new or updated notices."
+ },
+ {
+  "handle": "exuberantal/government-tenders-contracts-grants-scraper",
+  "title": "Government Tenders, Contracts & Grants [FREE]",
+  "users": 2,
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "[FREE Edition - 25 rows/run] Scrape live government construction tenders, IT contracts, federal contract awards, and grants across the US (USAspending.gov & Grants.gov) and UK (Contracts Finder OCDS API)."
+ },
+ {
+  "handle": "fecklesspleb/eu-uk-public-tenders",
+  "title": "EU & UK Tender Scraper: TED, Find a Tender, Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Public procurement notices from the official TED (EU), Find a Tender and Contracts Finder (UK) APIs in one schema: title, buyer, CPV, value, deadline, winners. Dedupe, CPV/country/value filters. Ausschreibungen, appels d'offres, licitaciones, gare d'appalto, przetargi, aanbestedingen. Unofficial."
+ },
+ {
+  "handle": "felixgoldwin/uk-contract-renewal-monitor",
+  "title": "UK Find a Tender: Contract End Dates & Amendments",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "renewal-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): renewal-record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Track published contract end dates, renewal terms and amendments in UK Find a Tender records. Monitor an OCID watchlist or update window, compare saved snapshots, and export buyer, supplier and value evidence with notice links. End dates indicate possible renewal windows."
+ },
+ {
+  "handle": "fetchfinch/eu-uk-tender-match-monitor",
+  "title": "EU & UK Tender Scraper - TED, Matching & Alerts",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "[\ud83d\udcb0 $5.00 / 1K] Find EU TED and UK Find a Tender notices matching your services. Filter by CPV, country, keywords and deadlines; get ranked opportunities, buyer details and source links. Schedule new or changed tender alerts."
+ },
+ {
+  "handle": "flamelit_constellation/uk-public-tender-monitor",
+  "title": "UK Public Tender Monitor (CF + FTS)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-item,run-start",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Unofficial tool, not affiliated with UK Government/Cabinet Office. Get only new and amended UK public notices from Find a Tender and Contracts Finder since your last run, in one feed. OGL v3.0 data."
+ },
+ {
+  "handle": "folt/eu-tenders-monitor",
+  "title": "EU & UK Tenders Scraper & Monitor (TED, Find a Tender)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search and monitor EU and UK public tenders from TED, Find a Tender and Contracts Finder by keyword, CPV code, country and notice type. Daily bid alerts with only new notices, buyer, values, deadlines and award winners in one clean schema. Official APIs."
+ },
+ {
+  "handle": "foxlabs/uk-contracts-finder-supplier-data",
+  "title": "UK Public Contract Awards & Suppliers \u2014 Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search UK public-sector contract awards on Contracts Finder by keyword, buyer or supplier. Returns awarded supplier names and IDs, contract value, buyer organisation, CPV classification, award and contract dates, and the tender description."
+ },
+ {
+  "handle": "gettingtechnicl/uk-find-a-tender",
+  "title": "UK Find a Tender Service (OCDS API) - Data Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Extract record data from UK Find a Tender Service (OCDS API) via its official public JSON API. Search by limit and export 72 structured fields per record as JSON, CSV or Excel - reliable, with no fragile HTML scraping."
+ },
+ {
+  "handle": "gmoran/uk-contracts-finder-tender-extractor",
+  "title": "UK Contracts Finder Tender Extractor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": ""
+ },
+ {
+  "handle": "graylabs/eu-uk-tenders",
+  "title": "EU & UK Tenders API: TED, Contracts Finder (Unofficial)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "EU tenders from TED and UK tenders from Contracts Finder in one schema: public procurement notices and awards with buyer, CPV code, NUTS or UK region, value and deadline. From official keyless APIs; flags new and changed. Not affiliated with the EU Publications Office or Crown Commercial Service."
+ },
+ {
+  "handle": "infocomp/eu-uk-tenders",
+  "title": "EU TED & UK Tender Feed: Find a Tender Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "EU TED and UK Find a Tender / Contracts Finder tender feed via official APIs: one clean notice list with buyer, value, deadline, lots and links. Filter by keyword, country, CPV and date. Watch mode for new notices only. $2.50 per 1,000."
+ },
+ {
+  "handle": "j0401/uk-public-procurement",
+  "title": "UK Public Procurement - Find a Tender & Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-record",
+  "unit_tiers": {
+   "FREE": 5e-05,
+   "BRONZE": 4.5e-05,
+   "SILVER": 4e-05,
+   "GOLD": 3e-05,
+   "PLATINUM": 3e-05,
+   "DIAMOND": 3e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK public procurement notices from both official OCDS feeds (OGL v3): Find a Tender (above threshold, since 2021) and Contracts Finder (below threshold, since 2016). Buyer, suppliers, CPV codes, values, dates and links. Filter by keyword, CPV, buyer, supplier, stage, value or date; aggregate."
+ },
+ {
+  "handle": "joey_wei/public-tenders-feed",
+  "title": "Public Tenders Feed: EU TED + UK Tenders, New-Notice Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-returned",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Open public tenders from EU TED, UK Find a Tender and UK Contracts Finder in one clean JSON schema. Filter by keyword, CPV code, country, value and deadline; schedule it to get only NEW notices since the last run. Official keyless APIs, no login."
+ },
+ {
+  "handle": "keepable_injera/uk-tenders-monitor",
+  "title": "UK Public Tenders Monitor (Contracts Finder + Find a Tender)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Merged UK public procurement notices from Contracts Finder and Find a Tender (OCDS): filter by keyword, CPV, value, region and stage, with onlyNew change detection. Unofficial; not affiliated with the UK Government. Contains public sector information licensed under the Open Government Licence v3.0."
+ },
+ {
+  "handle": "larches/uk-public-tenders-feed",
+  "title": "UK Public Tenders & Contract Expiry Feed",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "One clean, deduplicated feed of UK public sector tenders, awards and soon-to-expire contracts from the official Find a Tender and Contracts Finder OCDS APIs. Contact-person data is stripped by default."
+ },
+ {
+  "handle": "lindenwerk/uk-tender-matcher",
+  "title": "UK Tenders: Find a Tender & Government Contracts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "scored-match",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice,scored-match",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK tenders and government contracts from Find a Tender: UK public procurement notices (Procurement Act 2023, above and below threshold) scored to your CPV codes, keywords, regions and value, with deadlines, SME/VCSE flags and match reasons. Daily tender alerts, 31-day backfill, award tracking."
+ },
+ {
+  "handle": "locaihost/gov-tenders",
+  "title": "Government Tenders Scraper (UK, EU TED, US, Canada, Australia)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.00225,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00165,
+   "DIAMOND": 0.00165
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape government tenders and contract awards from UK Find a Tender, Contracts Finder, EU TED and CanadaBuys, plus SAM.gov, USAspending and AusTender: buyer, CPV or NAICS code, value, deadline, winning supplier and link. Only new notices since your last run. No login. $3 per 1,000 tenders."
+ },
+ {
+  "handle": "locaihost/uk-procurement-act",
+  "title": "Find a Tender Scraper (UK Late Payers & Contract KPIs)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.00375,
+   "GOLD": 0.00275,
+   "PLATINUM": 0.00275,
+   "DIAMOND": 0.00275
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape UK late payers from Find a Tender: Procurement Act payment compliance reports with % of invoices paid within 30 days, average days to pay and trend, plus contract performance ratings and terminations with the supplier named. Official open data, no login. $5 per 1,000 notices."
+ },
+ {
+  "handle": "logical_resourcefulnes/uk-it-tender-amendment-watch",
+  "title": "UK IT Tender Amendment & Deadline Watch",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "For UK software bid teams: review Find a Tender deadline and status changes, grouped by OCID with source links and coverage evidence. Bounded scans support a review queue; they do not cover the whole market."
+ },
+ {
+  "handle": "lone_rachis/public-tenders-feed",
+  "title": "Public Tenders Feed: EU, UK, US, Canada, New Only",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "New public tenders from EU TED, UK Find a Tender, the SAM.gov public extract and CanadaBuys in one record shape. Filter by CPV, NAICS, UNSPSC, keywords, country and value. Each run delivers only notices it did not deliver before, with a free summary row per source."
+ },
+ {
+  "handle": "lukehunter/uk-tenders-monitor",
+  "title": "UK Tenders Monitor - Contracts Finder & Find a Tender Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Monitor new UK public-sector tenders from the official Contracts Finder and Find a Tender APIs. Filter by keyword, CPV code, value, region and buyer, get only new notices on a schedule, and alert Slack or Discord for $0.004/notice ($0.008 from 1 Nov)."
+ },
+ {
+  "handle": "madeform/uk-tenders",
+  "title": "UK Tenders \u2013 Find a Tender & Contracts Finder Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape new UK public procurement tenders from Find a Tender and Contracts Finder in one run. Filter by keyword, CPV code, region, value or SME suitability. Get buyer, value, deadline, CPV labels and notice links as JSON, CSV or Excel. De-duplicated, only-new mode for alerts. $3 per 1,000 tenders."
+ },
+ {
+  "handle": "markdemian/gov-tenders-feed",
+  "title": "Government Tenders API: EU TED, UK Find a Tender & SAM.gov beta",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "New public tenders from EU TED and UK Find a Tender, plus SAM.gov (beta, your own key), in one clean schema. Filter by keyword, CPV, NAICS, country and deadline. Official APIs only."
+ },
+ {
+  "handle": "maydit/uk-tender-pipeline-monitor",
+  "title": "UK Tender Pipeline Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.004,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Track official Find a Tender procedures, deadlines, values and award changes. Export one compiled record per OCID with source links and optional saved comparisons."
+ },
+ {
+  "handle": "mikee368/eu-tender-monitor",
+  "title": "EU & UK Tender Monitor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.0027,
+   "GOLD": 0.00255,
+   "PLATINUM": 0.00255,
+   "DIAMOND": 0.00255
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "New public tenders from TED (EU), TenderNed (NL), BOAMP (FR) and Doffin (NO) in one English feed. One keyword, 5 languages, no duplicates."
+ },
+ {
+  "handle": "minimal_ricegrass/uk-tender-monitor",
+  "title": "UK Public Tender Monitor - Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.04
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Watches UK Contracts Finder for new public-sector tender opportunities matching your keyword, CPV codes, minimum value and SME suitability. Each scheduled run emits only tenders published since the last run, with buyer, value and closing date, plus optional webhook POST."
+ },
+ {
+  "handle": "moment-data/commonwealth-tenders-feed",
+  "title": "UK, Australia & Canada Government Tenders Feed (OCDS)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "One normalized OCDS-style feed of public tenders, contract awards and contracts from UK Find a Tender, UK Contracts Finder, AusTender and CanadaBuys. Filter by country, stage, CPV/UNSPSC, keywords, value and date. No API key."
+ },
+ {
+  "handle": "mrslm_data/uk-public-tenders",
+  "title": "UK Public Tenders Scraper: Contracts Finder & Find a Tender",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Open UK public-sector tenders from Contracts Finder and Find a Tender in one feed: buyer, CPV, value, deadline, SME suitability and links. Keyword filter. JSON or CSV output."
+ },
+ {
+  "handle": "mrtrelock/public-tenders-scraper",
+  "title": "EU TED & UK Public Tenders Scraper: Procurement",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Public tenders scraper for EU and UK government procurement: get tenders, RFPs and contract awards from TED (all EU countries), UK Find a Tender and Contracts Finder in one format. Filter by keyword, CPV code, country, value and deadline. Daily tender alerts with only new notices. No personal data."
+ },
+ {
+  "handle": "nexgenwatch/tender-pipeline-report",
+  "title": "UK Government Tenders & EU Tenders Report \u2014 Pipeline Window",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-pipeline-report",
+  "unit_tiers": {
+   "FREE": 15,
+   "BRONZE": 13.5,
+   "SILVER": 12,
+   "GOLD": 10.05,
+   "PLATINUM": 10.05,
+   "DIAMOND": 10.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-pipeline-report",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "One report on UK government tenders (Find a Tender) and EU tenders (TED) published in your date window \u2014 sized by buyer and CPV category for bid teams, procurement-intelligence vendors and consultancies. Pay per report."
+ },
+ {
+  "handle": "nexgenwatch/uk-contracts-finder-contract-award-watch",
+  "title": "UK Contracts Finder Awards Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "cf-award-delta",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0034,
+   "PLATINUM": 0.0034,
+   "DIAMOND": 0.0034
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cf-award-delta,source-check",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape UK Contracts Finder contract award notices: buyer, supplier, value and award date. Every run returns the current records as a dataset. Optional watch mode returns only what changed since your last run. Pay per result."
+ },
+ {
+  "handle": "nexgenwatch/uk-contracts-finder-new-opportunity-watch",
+  "title": "UK Contracts Finder New Tenders Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "cf-opportunity-delta",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.04,
+   "GOLD": 0.0335,
+   "PLATINUM": 0.0335,
+   "DIAMOND": 0.0335
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cf-opportunity-delta,source-check",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape new UK Contracts Finder tender opportunities: buyer, title, value, CPV and closing date. Every run returns the current records as a dataset. Optional watch mode returns only what changed since your last run. Pay per result."
+ },
+ {
+  "handle": "nimble_saucer/uk-public-tenders",
+  "title": "UK Public Tenders (Find a Tender + Contracts Finder)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Open UK public sector tenders from Find a Tender and Contracts Finder as clean, de-duplicated JSON. Filter by keyword, CPV code, region and value."
+ },
+ {
+  "handle": "northbell/uk-contracts-finder-scraper",
+  "title": "Contracts Finder Scraper \u2014 UK Tenders & Government Contracts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0018000000000000002,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK tenders scraper for Contracts Finder at $2 per 1,000 notices: UK government contracts, public tenders and awards with buyer, title, CPV codes, value, deadline, region and winning supplier. Filter by keyword, CPV, region or value; flag notices new since your last run. Official API, no login."
+ },
+ {
+  "handle": "notational_bush/uk-eu-contract-awards",
+  "title": "UK Tenders & Awards \u2013 Find a Tender, Contracts Finder, TED",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record,tender-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK government tenders and contract awards from Find a Tender, Contracts Finder and EU TED in one feed. See which public contracts expire in the next 12 months, who holds them, and each UK winner's Companies House number. First 25 rows free per run. Official APIs, no personal data."
+ },
+ {
+  "handle": "oldjard/uk-eu-public-tenders",
+  "title": "UK & EU Public Tenders: Find a Tender & TED",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-found",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK and EU public tenders and government contracts from the official Find a Tender, TED and Contracts Finder APIs in one table: buyer, value, CPV, deadline and UK award winners. Filter by keyword, CPV, country and value; run it daily with only-new mode for tender alerts. $3 per 1,000 notices."
+ },
+ {
+  "handle": "one_dollar_store/uk-find-a-tender-notices",
+  "title": "UK Find a Tender: Public Contract Notices, No Login",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK public contract notices above threshold from the official Find a Tender OCDS API: title, buyer, value, deadline, CPV codes, region, awards and notice link. Filter by keyword, buyer, CPV and value. No key. $1 per 1,000 results, platform usage included."
+ },
+ {
+  "handle": "onibaku/uk-public-tenders",
+  "title": "UK Tenders: Find a Tender & Contracts Finder Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK tenders, contract awards and pipeline notices from Find a Tender and Contracts Finder in one table. Filter by keyword, CPV code, region, buyer, value and deadline; schedule it to get only new notices as tender alerts. Official OCDS data, one flat row per notice."
+ },
+ {
+  "handle": "opendata-feeds/eu-uk-tenders",
+  "title": "EU & UK Public Tenders: TED, Find a Tender, Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Government tenders and contract awards from TED (EU public procurement), UK Find a Tender and UK Contracts Finder, from their official open-data APIs, in one clean schema. Filter by keyword, country, CPV code, value and notice type; only-new mode for daily alerts. $3 per 1,000 notices."
+ },
+ {
+  "handle": "opendata-tools/uk-tenders-feed",
+  "title": "UK Public Tenders Feed: Find a Tender + Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0035,
+   "SILVER": 0.003,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK public-sector tenders, pipeline notices and contract awards from the official Find a Tender and Contracts Finder OCDS APIs, flattened and de-duplicated. Filter by keyword, CPV prefix, GBP value, postcode, NUTS/ITL region, deadline and SME flag. No API key."
+ },
+ {
+  "handle": "orange_briefcase_hrj/uk-tender-alerts",
+  "title": "UK Public Tender Alerts - Find a Tender & Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "$1.50 per 1,000 notices. Daily UK government tender alerts from Find a Tender and Contracts Finder. Filter by keyword, CPV code, region, value and deadline; cross-posted notices are merged and an alert mode returns only new notices."
+ },
+ {
+  "handle": "orzelcolony/uk-public-tenders",
+  "title": "UK Tenders Scraper - Find a Tender + Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK government tenders, contract awards and pipeline notices from Find a Tender and Contracts Finder via the official OCDS APIs. Filter by keyword, CPV, region, buyer, deadline, value and SME flag; monitor daily. Clean JSON with buyer contacts, values, deadlines and winning suppliers."
+ },
+ {
+  "handle": "oval_opera_myg/uk-contract-awards-supplier-health",
+  "title": "UK Public Contract Awards + Supplier Health",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record,supplier-enriched,supplier-profile",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK public contract awards from Find a Tender and Contracts Finder, with every supplier matched to Companies House (confidence + evidence) and register signals to review."
+ },
+ {
+  "handle": "owenryland/uk-public-tenders",
+  "title": "UK Public Tenders Feed (Contracts Finder + Find a Tender)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Every new UK public-sector tender in one clean, de-duplicated feed from the official Contracts Finder and Find a Tender APIs. Filter by keyword, CPV, value, region, SME suitability and deadline; 'only new' mode for daily alerts. No scraping, no personal contact data."
+ },
+ {
+  "handle": "pagecraft/uk-tenders-finder",
+  "title": "UK Government Tenders Scraper (Find a Tender & Contracts)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-scraped",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0025,
+   "GOLD": 0.0022,
+   "PLATINUM": 0.0022,
+   "DIAMOND": 0.0022
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-scraped,results-page-scanned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search UK government tenders and contract awards from Find a Tender and Contracts Finder: keywords, CPV codes, value, buyer and deadlines. Clean, deduplicated results."
+ },
+ {
+  "handle": "pankajbhatia/uk-contracts-finder-scraper",
+  "title": "UK Contracts Finder Scraper: Public Tenders & Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Search UK government tenders and contract awards on the official Contracts Finder: keyword, status, region, value and SME suitability. Get buyer, values, deadlines, CPV codes, awarded supplier and links. Open Government Licence data."
+ },
+ {
+  "handle": "pankajbhatia/uk-find-a-tender-notices",
+  "title": "UK Find a Tender: Public Contracts, Tenders & Awards (OCDS)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK public sector tenders, planned procurements and contract awards from the official Find a Tender service: title, buyer, CPV code, value, deadline, contract dates, region and winning suppliers. Filter by keyword, CPV, value."
+ },
+ {
+  "handle": "parseforge/contractsfinder-uk-tenders-scraper",
+  "title": "Contracts Finder UK Tenders Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.00445,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrapes UK public procurement notices from Contracts Finder. Returns each tender as a flat row with title, buyer, value, dates, and description."
+ },
+ {
+  "handle": "persistent_parrot/uk-tenders-alerts",
+  "title": "UK Tenders Alerts: Contracts Finder + Find a Tender",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-row",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-row",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK tenders and awards from Contracts Finder + Find a Tender, filtered by keyword or CPV; about 3 in 10 award supplier names withheld; not an official service."
+ },
+ {
+  "handle": "pikoulas/uk-tenders",
+  "title": "UK Tenders: Find a Tender & Contracts Finder in One, Bid Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.003,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK public tenders and awards from Find a Tender and Contracts Finder in one feed, a notice both carry given once: open tenders you can still bid on, SME-suitable lots, who won what. Bid alerts give each procedure once, then its amendments and award. Buyer contacts, values, deadlines."
+ },
+ {
+  "handle": "plainrows/public-tenders-search",
+  "title": "Public Tenders API & Search: EU TED & UK Procurement API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0025,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 0.012,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Public tenders search and MCP tool: government contracts, notices and award winners from EU TED (Tenders Electronic Daily), UK Find a Tender and Contracts Finder: keywords, CPV, countries, value in EUR, deadlines, winners. Only-new-notices mode. Pay per notice plus a start fee per run."
+ },
+ {
+  "handle": "plainsourcedata/uk-public-tenders-feed",
+  "title": "UK Public Tenders Feed (Contracts Finder + Find a Tender)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "One clean, de-duplicated feed of UK public-sector tenders and contract awards from the official Contracts Finder and Find a Tender OCDS APIs. Filter by keyword, CPV code, value, region and date; 'new since last run' mode for alerts. OGL v3.0 data, no personal contact data. Unofficial."
+ },
+ {
+  "handle": "plotpointtech/government-tenders-feed",
+  "title": "Government Tenders Scraper - EU TED, UK & Canada Contracts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.0031,
+   "PLATINUM": 0.0031,
+   "DIAMOND": 0.0031
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Find public contracts to bid on from EU TED, UK Find a Tender, UK Contracts Finder and CanadaBuys in one clean format: buyer, deadline, value, CPV codes and link. Only open tenders by default. $5 per 1,000 tenders."
+ },
+ {
+  "handle": "polderdata/uk-tenders-scraper",
+  "title": "UK Tenders Scraper: Find a Tender & Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Get UK public sector tenders and contract awards from Find a Tender and Contracts Finder (official open data). Filter by keyword, CPV code, region, value and deadline. Export to CSV, JSON or Excel."
+ },
+ {
+  "handle": "powerfully_goliath/uk-government-contracts",
+  "title": "UK Government Contracts & Tenders \u2014 Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice,notice-with-contacts",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Search UK public-sector tenders and contract awards from the official Contracts Finder API: keywords, CPV codes, regions, value, postcode radius, SME-suitable. Get buyer contact name, email and phone, deadlines, values and winning suppliers. No API key. Pay per notice."
+ },
+ {
+  "handle": "practicalmodules/eu-uk-tenders",
+  "title": "Government Tenders & Contracts API - EU, UK, US & Canada",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Bid opportunities, solicitations, request for quotation and contract awards from EU TED, UK Find a Tender, Contracts Finder, US SAM.gov and CanadaBuys. Filter by keyword and country. Monitor mode returns new notices for tender alerts."
+ },
+ {
+  "handle": "pushbuild/eu-uk-tenders",
+  "title": "EU & UK Public Tenders - TED and Contracts Finder Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Search open public-sector tenders across the EU (TED, Official Journal) and the UK (Contracts Finder) by keyword, country, CPV code, value and date. Returns buyer, deadline, estimated value, CPV codes, description and notice link."
+ },
+ {
+  "handle": "ram1eal/public-tenders-search",
+  "title": "TED Tenders Scraper \u2013 EU & UK Procurement",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0037,
+   "SILVER": 0.0033,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search public tenders and contract notices from EU TED and UK Find a Tender in one clean English dataset: buyer, value, deadline, CPV codes, documents. Daily alerts for new tenders. Pay per notice."
+ },
+ {
+  "handle": "rowcraft/uk-tenders-scraper",
+  "title": "UK Tenders Scraper: Find a Tender + Contracts Finder API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00267,
+   "SILVER": 0.00233,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK public procurement notices from Find a Tender and Contracts Finder, the official UK government portals, through their open OCDS APIs: title, buyer, region, CPV codes, values, deadlines, notice type and links. Filter by text, CPV, region, stage and value. No personal data."
+ },
+ {
+  "handle": "rowfeed/eu-tenders-scraper",
+  "title": "EU Tenders Scraper \u2013 TED Public Procurement & Tender Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.000475,
+   "SILVER": 0.00045,
+   "GOLD": 0.000425,
+   "PLATINUM": 0.000425,
+   "DIAMOND": 0.000425
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Public tenders from TED, the EU's official procurement journal, plus UK Contracts Finder, as clean rows: title, buyer, country, deadline, value, CPV codes, description, winners and PDF link. Filter by keyword, country, CPV and open calls or awards. Daily tender alerts. $0.50 per 1,000 notices."
+ },
+ {
+  "handle": "scrapebench/uk-government-tenders-scraper",
+  "title": "UK Government Tenders & Contract Awards Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.003,
+  "note": "no recurring event -- one-time/start-fee only",
+  "undercuts_tiers": [],
+  "runfee": 0.003,
+  "runfee_label": "tender-notice",
+  "runfee_crossover_rows": 1,
+  "every_tier": false,
+  "desc": "UK public sector tenders, pipeline notices and contract awards from Find a Tender and Contracts Finder in one feed: buyer email, CPV, value, deadline, region and winning supplier. Filter by keyword, CPV, buyer, region and value."
+ },
+ {
+  "handle": "scrapemint/government-tender-finder",
+  "title": "Government Tenders Scraper: EU TED, UK & World Bank",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender_row",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender_row",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Government tenders and public procurement notices worldwide, keyless. Search live tenders across EU TED (27+ countries), UK Contracts Finder and World Bank projects in 140+ countries. One row per tender with buyer, title, CPV code, value, deadline and the source notice URL."
+ },
+ {
+  "handle": "scrapers_lat/uk-find-a-tender-scraper",
+  "title": "UK Find a Tender Scraper - High-Value Public Tenders",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_company_summary,ai_industry,ai_risk_flags,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Extract UK high-value, above-threshold public tenders & awards from the official Find a Tender Service (OCDS). Distinct from Contracts Finder (below-threshold). Get title, buyer, contacts, value, CPV, deadline, award status & suppliers, documents. JSON/CSV/Excel."
+ },
+ {
+  "handle": "scrapesage/global-tenders-scraper",
+  "title": "Global Tenders Scraper - EU TED, UK & World Bank Procurement",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0068,
+   "SILVER": 0.0056,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.00304,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,lead,tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Scrape government & public procurement tenders worldwide - EU TED, UK Find a Tender and World Bank in one run. Buyer contacts, contract awards (who won), CPV codes, values, deadlines, B2G/B2B leads, lead scoring & only-new monitoring. Keyless, no browser."
+ },
+ {
+  "handle": "sentry_zero/public-procurement-evidence-packet",
+  "title": "UK Procurement Evidence | Contracts Finder & FTS",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Bounded UK Contracts Finder and Find a Tender OCDS evidence packets with provenance and explicit missing fields. Supports supplied records or limited lookup by notice ID or keyword. Read-only: no eligibility advice, bid recommendation, document download, arbitrary URL fetch or external write."
+ },
+ {
+  "handle": "seralifatih/uk-public-tenders",
+  "title": "UK Public Tenders \u2014 Find a Tender + Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "One reliable feed of UK public procurement notices. Merges Find a Tender and Contracts Finder (the Procurement Act 2023 split) into a single schema, with CPV, value, region and keyword filters and a new-notices-only mode."
+ },
+ {
+  "handle": "sinaayo/government-tender-monitor",
+  "title": "Government Tender Monitor: EU, UK, US & Canada",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Open government tenders from EU TED, UK Find a Tender and Contracts Finder, US SAM.gov and CanadaBuys in one clean format. Keyword and category alerts, buyer contacts, only-new mode and optional English AI summaries."
+ },
+ {
+  "handle": "siteverdict/siteverdict-public-tenders",
+  "title": "UK & EU Public Tenders & Contracts Finder \u00b7 SiteVerdict",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK and EU public tenders and awards in one feed: Find a Tender, Contracts Finder, Public Contracts Scotland, Sell2Wales and TED. Filter by keyword, CPV, buyer, region, value and deadline; rank by relevance; schedule daily alerts. $5 per 1,000 notices; already-seen notices are free in monitor mode."
+ },
+ {
+  "handle": "siteverdict/siteverdict-uk-contract-awards",
+  "title": "SiteVerdict \u2014 UK Contract Awards & Supplier Win Analytics",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 4 recurring, no primary flag",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,buyer-profile,notice,supplier-profile",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Who won which UK public contract, for how much, from which buyer: Contracts Finder + Find a Tender award notices (OCDS open data, OGL). Supplier and buyer analytics (wins, value share, top buyers, CPV, bids where published), monitoring and Slack/webhook alerts."
+ },
+ {
+  "handle": "sterlingverify/uk-tenders",
+  "title": "UK Public Sector Tenders",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK tenders search: find new UK government and public sector tenders from Contracts Finder by keyword, value and SME suitability. Get title, buyer, contact email, value, CPV code and deadline for each matching opportunity: a daily lead feed for B2B suppliers, fintech and payments companies."
+ },
+ {
+  "handle": "straightforward_hydra/uk-contracts-finder-intelligence",
+  "title": "UK Public Sector Contract & Tender Intelligence",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Find open UK government tenders to bid on, or track who wins public-sector contracts. Official Contracts Finder OCDS data. No key."
+ },
+ {
+  "handle": "studded_lantana/uk-tenders",
+  "title": "UK Tenders: Find a Tender + Contracts Finder Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK public procurement notices from the official Find a Tender and Contracts Finder OCDS APIs in one clean schema. Filter by keyword, CPV code, value, date and open deadline."
+ },
+ {
+  "handle": "tabulary/uk-public-tenders",
+  "title": "UK Tenders API: Contracts Finder & Find a Tender",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002,
+   "GOLD": 0.00175,
+   "PLATINUM": 0.00175,
+   "DIAMOND": 0.00175
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "UK government tenders and contracts: public sector tenders, planned procurements and contract awards from Contracts Finder and Find a Tender, the official UK government procurement services, in one feed. Filter by keyword, CPV code, value and deadline. Optional tender alerts: only new notices."
+ },
+ {
+  "handle": "tan-solutions/public-tenders",
+  "title": "Public Tender Alerts: EU and UK Procurement Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0033,
+   "SILVER": 0.003,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "New public tenders from the EU (TED) and the UK Find a Tender Service in one clean feed: deadline, CPV codes, buyer, value. Filter by CPV, country, keyword or buyer; the daily monitor returns only new notices. Pay per notice. Not affiliated with the EU or the UK Government."
+ },
+ {
+  "handle": "taroyamada/government-tender-grants-monitor",
+  "title": "Grants.gov, TED & SAM.gov Tender Monitor \u2014 Keyword Bid Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "raw-opportunity-row",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): buyer-watch-report,deadline-change-alert,grant-opportunity-alert,raw-opportunity-row,tender-export-generated,tender-opportunity-alert",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Watch public tenders from Grants.gov, EU TED, UK Contracts Finder and World Bank (SAM.gov with your key): title, buyer, deadline, source and notice link per keyword/NAICS/CPV watch. No login for public sources."
+ },
+ {
+  "handle": "tenderfeed/uk-tenders",
+  "title": "UK Tenders Scraper: Find a Tender + Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "desc": "Scrape UK government tenders and contract awards from Find a Tender (FTS) and Contracts Finder via official OCDS APIs. Filter by keyword, CPV, region, value, deadline and SME suitability. One row per procurement, \"only new\" daily alerts. Export to Excel, CSV, JSON or API."
+ },
+ {
+  "handle": "thesjostrandproject/uk-tenders-search",
+  "title": "UK Public Tenders Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search UK public tender notices by last-updated date, stage, CPV code and buyer through the UK's official procurement API. Clean, typed records with no contact persons and no suppliers. No login, no scraping. Pay per record."
+ },
+ {
+  "handle": "thirdwatch/uk-contracts-finder-scraper",
+  "title": "UK Contracts Finder Scraper - Tenders & Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Export official UK Contracts Finder OCDS notices with buyers, suppliers, values, deadlines, CPV categories, procurement methods, and source URLs. Built for lead sourcing, enrichment, and prospect research. No login, cookies, or API keys \u2014 clean JSON output and pay-per-result pricing."
+ },
+ {
+  "handle": "tiger19935/ocds-tenders-api",
+  "title": "Open Contracting OCDS Tenders API: MD, UK, UA Procurement",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-event,tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Open Contracting OCDS tenders API: normalized public tenders from MTender (Moldova), Contracts Finder and Find a Tender (UK) and Prozorro (Ukraine) in one flat schema. Filter by keywords, CPV, value and date, monitor new tenders and awards. Pay per tender."
+ },
+ {
+  "handle": "titan_coder/uk-contracts-finder-high-value-radar",
+  "title": "UK Contracts Finder High-Value Tender Radar (Save 90%)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice-delivered",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Public procurement & government bidding intelligence streaming high-value UK public sector tender notices, contracts finder awards, and buyer requirements under OCDS standard."
+ },
+ {
+  "handle": "turbokast/uk-tenders-monitor",
+  "title": "UK Tenders Monitor: Contracts Finder and Find a Tender notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "One feed of UK public-sector tender notices from Contracts Finder and Find a Tender, merged and de-duplicated, filtered by keyword, CPV code, value, region and SME suitability, with a new-since-last-run option for monitoring. Official open data."
+ },
+ {
+  "handle": "usta/procurement-amendment-deadline-deltas",
+  "title": "UK Tender Deadline & Cancellation Changes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "For bid teams: compare official Find a Tender notice histories for your procurement watchlist. Get changed deadlines and statuses with old/new values and source links. Pay only for delivered changed-notice rows."
+ },
+ {
+  "handle": "velveteen_driver/uk-public-tenders",
+  "title": "UK Government Tenders: Contracts Finder & Find a Tender",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Search new UK public-sector tenders and contract awards from Contracts Finder and Find a Tender in one run. Filter by keyword, CPV code, buyer, value, deadline and SME suitability. Official open OCDS APIs, Open Government Licence, personal contact details removed."
+ },
+ {
+  "handle": "wrtcom/gov-tenders-uk-au",
+  "title": "UK Tenders API: Contracts Finder & AusTender Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "UK and Australia government tenders and contract awards as JSON: Contracts Finder and AusTender (official OCDS data). Title, buyer, value, dates, CPV/UNSPSC, winning supplier. Filter by keyword, value, date; daily new-only feed. Tenders API, procurement data. $5 per 1,000."
+ },
+ {
+  "handle": "xtracto/gov-tenders-ocds",
+  "title": "Government Tenders & Procurement Tracker (EU, UK, Ukraine)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0043,
+   "SILVER": 0.0037,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Track public tenders across Europe \u2014 one tender per row with buyer, deadline, contract value, category codes and awarded supplier. Covers EU (all member states), UK Contracts Finder and Ukraine, in one common format. Public data, no account needed."
+ },
+ {
+  "handle": "yourevenings/eu-uk-public-tenders",
+  "title": "Public Tenders API: EU Tenders, Find a Tender, Contracts Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0036,
+   "GOLD": 0.0032,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0032
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): alert-run-with-matches,notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Public tenders API: EU tenders, TED tenders (Tenders Electronic Daily) and UK tenders (Find a Tender, Contracts Finder). Government tenders, public procurement, UK government contracts and contract awards. Filter by CPV. Daily tender alerts. Not affiliated with TED or the EU."
+ },
+ {
+  "handle": "zinin/uk-public-tender-lead-alert",
+  "title": "UK Public Tender Lead Alert",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0095,
+   "SILVER": 0.009,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0082,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "desc": "Watch UK Find a Tender for public-sector tenders newly matching your keywords, CPV codes, value threshold or region, and get only the new ones since your last check."
+ }
+]
