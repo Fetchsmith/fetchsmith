@@ -1,0 +1,274 @@
+[
+ {
+  "handle": "data_direct/substack-user-scraper",
+  "title": "Substack User Profile Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Run"
+   }
+  },
+  "desc": "Get an author's profile"
+ },
+ {
+  "handle": "data_direct/substack-post-comments-scraper",
+  "title": "Substack Post Comments Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Run"
+   }
+  },
+  "desc": "Get a post's comment thread"
+ },
+ {
+  "handle": "data_direct/substack-user-posts-scraper",
+  "title": "Substack User Posts Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Page"
+   }
+  },
+  "desc": "Get an author's posts"
+ },
+ {
+  "handle": "data_direct/substack-note-scraper",
+  "title": "Substack Note Details Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Run"
+   }
+  },
+  "desc": "Get a Note with its replies"
+ }
+]
