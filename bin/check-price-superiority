@@ -115,6 +115,40 @@ EPSILON = 1e-9
 RUNFEE_CROSSOVER_ROWS = 1000
 
 
+def disclosure_docs(slug):
+    """[(basename, path), ...] for every file that can disclose a rival on this Actor's page.
+
+    Cycle 3836 found and fixed the identical blindness in `bin/niche-unnamed`: since cycle
+    3813, eight Actors have had their dated competitor-audit trail relocated out of
+    README.md into a sibling COMPETITORS.md to stay under the Apify Store's 99,999-byte
+    render cap (c3813 trademark-search, c3828 grants-gov, and six more). This script read
+    README.md alone too, so on every relocated Actor a rival disclosed only in
+    COMPETITORS.md was invisible to `wanted` (never fetched, so never compared) and, worse,
+    to `disclosed_anywhere` -- an undercutter fully disclosed in the relocated file would
+    print as UNDISCLOSED here. Measured on `trademark-search-scraper`: coverage fell from
+    3,051 named-rival prices compared (c3497) to 2,386 (c3836), a silent regression that
+    under-reports rather than false-flags.
+
+    README.md and COMPETITORS.md are returned as SEPARATE entries, each to be scanned with
+    its own line-number offset -- never concatenated. `niche-unnamed`'s fix (c3836) hit a
+    real trap taking the shortcut: the generic `` `([^`]+)` `` backtick-span scan is parity-
+    sensitive, and a double-backtick-quoted handle literal elsewhere in the text consumes an
+    odd delimiter count, so plain string concatenation can silently invert the second file's
+    pairing. FULL_HANDLE above is anchored (exactly one open backtick, the handle shape, one
+    close backtick) rather than a generic span scan, so it is not provably exposed to that
+    same trap -- but per-document scanning is free here, needed anyway for correct
+    `file:lineno` attribution in every printed flag, and removes the question entirely.
+    """
+    readme = os.path.join(ROOT, "actors", slug, "README.md")
+    if not os.path.exists(readme):
+        return []
+    docs = [("README.md", readme)]
+    relocated = os.path.join(ROOT, "actors", slug, "COMPETITORS.md")
+    if os.path.exists(relocated):
+        docs.append(("COMPETITORS.md", relocated))
+    return docs
+
+
 def is_apify_handle(ident):
     """True if `ident` can be an owner/name Apify handle at all (see the notes above)."""
     owner, _, name = ident.partition("/")
@@ -390,12 +424,13 @@ def main():
     # left exactly as it was rather than restructured around a prefetched index.
     wanted = set()
     for slug in live:
-        path = os.path.join(ROOT, "actors", slug, "README.md")
-        if not os.path.exists(path):
+        docs = disclosure_docs(slug)
+        if not docs:
             continue
         wanted.add(f"fetchsmith/{slug}")
-        wanted.update(h for h in FULL_HANDLE.findall(open(path).read())
-                      if is_apify_handle(h))
+        for _, doc_path in docs:
+            wanted.update(h for h in FULL_HANDLE.findall(open(doc_path).read())
+                          if is_apify_handle(h))
     started = time.time()
     print(f"check-price-superiority: {len(live)} live Actor(s), "
           f"{len(wanted)} unique live Actor record(s) to fetch", file=sys.stderr, flush=True)
@@ -410,8 +445,8 @@ def main():
     unit_checked = unit_advised = decoy_skipped = 0
     mismatch_checked = mismatch_advised = mismatch_quiet = 0
     for n, slug in enumerate(live, 1):
-        path = os.path.join(ROOT, "actors", slug, "README.md")
-        if not os.path.exists(path):
+        docs = disclosure_docs(slug)
+        if not docs:
             continue
         print(f"  [{n}/{len(live)}] {slug} ({time.time() - started:.0f}s elapsed)",
               file=sys.stderr, flush=True)
@@ -425,23 +460,24 @@ def main():
             continue
         our_tiers, _ = all_tiers(our, now)
 
-        text = open(path).read()
-        paragraphs = text.split("\n\n")
+        # Scanned per-document, each with its own line-number offset, and NEVER
+        # concatenated -- see disclosure_docs()'s docstring (c3837).
         first_line = {}
         disclosed_anywhere = {}
         dead_disclosed = {}
-        offset = 1
-        for para in paragraphs:
-            lineno = offset
-            offset += para.count("\n") + 2
-            for ident in sorted(set(FULL_HANDLE.findall(para))):
-                if not is_apify_handle(ident):
-                    continue
-                first_line.setdefault(ident, lineno)
-                disclosed_anywhere[ident] = disclosed_anywhere.get(ident, False) or bool(DISCLOSED.search(para))
-                dead_disclosed[ident] = dead_disclosed.get(ident, False) or bool(DEAD_DISCLOSED.search(para))
+        for docname, doc_path in docs:
+            offset = 1
+            for para in open(doc_path).read().split("\n\n"):
+                lineno = offset
+                offset += para.count("\n") + 2
+                for ident in sorted(set(FULL_HANDLE.findall(para))):
+                    if not is_apify_handle(ident):
+                        continue
+                    first_line.setdefault(ident, (docname, lineno))
+                    disclosed_anywhere[ident] = disclosed_anywhere.get(ident, False) or bool(DISCLOSED.search(para))
+                    dead_disclosed[ident] = dead_disclosed.get(ident, False) or bool(DEAD_DISCLOSED.search(para))
 
-        for ident, lineno in sorted(first_line.items()):
+        for ident, (docname, lineno) in sorted(first_line.items()):
             if ident == f"fetchsmith/{slug}":
                 continue
             rival = live_actor(ident, headers)
@@ -450,7 +486,7 @@ def main():
                     gone_disclosed += 1
                     continue
                 gone += 1
-                print(f"GONE {slug}/README.md:{lineno}  {ident} is 404 on Apify but still "
+                print(f"GONE {slug}/{docname}:{lineno}  {ident} is 404 on Apify but still "
                       f"named here -- check-competitor-claims only re-derives handles that "
                       f"carry an explicit user-count claim (c2816), so a count-less mention "
                       f"like this one is not liveness-checked anywhere else")
@@ -468,12 +504,12 @@ def main():
                 if verdict:
                     runfee_flagged += 1
                     flagged += 1
-                    print(f"RUNFEE-UNDISCLOSED {slug}/README.md:{lineno}  {ident} charges a flat "
+                    print(f"RUNFEE-UNDISCLOSED {slug}/{docname}:{lineno}  {ident} charges a flat "
                           f"${flat:g}/run ({flat_label}, no per-row event) vs our "
                           f"${our_price:g}/{our_label} -- cheaper than us on any run over "
                           f"~{rows:.0f} row(s), but no paragraph in this file discloses it")
                 else:
-                    print(f"RUNFEE {slug}/README.md:{lineno}  {ident} charges a flat ${flat:g}/run "
+                    print(f"RUNFEE {slug}/{docname}:{lineno}  {ident} charges a flat ${flat:g}/run "
                           f"({flat_label}) vs our ${our_price:g}/{our_label} -- crossover "
                           f"~{rows:.0f} row(s)"
                           f"{'; disclosed' if disclosed_anywhere[ident] else '; above the '+str(RUNFEE_CROSSOVER_ROWS)+'-row floor'}")
@@ -524,7 +560,7 @@ def main():
                                   f"beats us past ~{rows:.0f} row(s) per `{noun}` if one "
                                   f"`{noun}` returns many rows (floor: one container per "
                                   f"run, and a run can sweep several)")
-                        print(f"UNIT-MISMATCH {slug}/README.md:{lineno}  {ident} bills its "
+                        print(f"UNIT-MISMATCH {slug}/{docname}:{lineno}  {ident} bills its "
                               f"selected event per `{noun}`, not per {our_label}: "
                               f"${rival_price:g}/{rival_label} vs our ${our_price:g} -- the "
                               f"per-row ratio is NOT comparable, and it {margin}"
@@ -539,7 +575,7 @@ def main():
                 if not disclosed_anywhere[ident]:
                     free_rung_flagged = True
                     flagged += 1
-                    print(f"UNDISCLOSED {slug}/README.md:{lineno}  {ident} charges "
+                    print(f"UNDISCLOSED {slug}/{docname}:{lineno}  {ident} charges "
                           f"${rival_price:g}/{rival_label} (live) vs our ${our_price:g}/{our_label} "
                           f"-- cheaper and named, but no paragraph in this file discloses it")
 
@@ -560,7 +596,7 @@ def main():
                         tier_flagged += 1
                         flagged += 1
                         best = min(undercuts, key=undercuts.get)
-                        print(f"TIER-UNDISCLOSED {slug}/README.md:{lineno}  {ident} reads "
+                        print(f"TIER-UNDISCLOSED {slug}/{docname}:{lineno}  {ident} reads "
                               f"${rival_price:g}/{rival_label} at FREE but drops to "
                               f"${undercuts[best]:g} at {best} (vs our "
                               f"${tier_price_at(our_tiers, best):g} there) -- cheaper at a "
@@ -594,7 +630,7 @@ def main():
                     if undercuts and not disclosed_anywhere[ident]:
                         unit_advised += 1
                         best = min(undercuts, key=undercuts.get)
-                        print(f"UNIT? {slug}/README.md:{lineno}  {ident} event `{ev_name}` "
+                        print(f"UNIT? {slug}/{docname}:{lineno}  {ident} event `{ev_name}` "
                               f"({ev_title or 'untitled'}) prices ${undercuts[best]:g} at "
                               f"{best} vs our ${tier_price_at(our_tiers, best):g} there -- "
                               f"NOT auto-flagged: read eventTitle/the Store description and "
