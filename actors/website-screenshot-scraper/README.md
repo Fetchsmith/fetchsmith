@@ -364,6 +364,16 @@ summary for a buyer: **if you need plain bulk capture, several rivals here are 2
 us and you should use one of them.** Our case is narrower than it was: the diff-two-live-URLs mode,
 raw-HTML input, the OG-card preset, and per-row `byteSize`/status/final-URL reporting.
 
+**One more undercutter found 2026-11-27 via a fleet-wide owner-pivot sweep, not the term search the
+2026-11-26 audit above used (which is why it was missed then):** `ctriolab/website-screenshot`
+(2 users) bills a flat tiered **$0.001 (Free) → $0.0007 (Gold+) per screenshot, plus a $0.00005
+start fee** — 2x-2.9x cheaper than our flat $0.002 at every tier. Read from its live Store listing,
+its scope is full-page or viewport capture as PNG/JPEG across four device sizes, cookie-banner
+hiding and single-element capture — no PDF output, no visual-diff mode, no raw-HTML input and no
+OG-card preset, the same gap every bare-capture rival above leaves open. Same case against it as
+the clusters above; folded in separately rather than into the "29" count, which is a dated snapshot
+of the term sweep, not a running tally.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 

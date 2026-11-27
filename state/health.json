@@ -1,5 +1,5 @@
 {
- "ts": 1795687410,
+ "ts": 1795750202,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -419,8 +419,8 @@
     "error",
     "imageUrl",
     "screenshotKey",
-    "contentType",
-    "byteSize"
+    "imageSha256",
+    "contentType"
    ],
    "err": null
   }
