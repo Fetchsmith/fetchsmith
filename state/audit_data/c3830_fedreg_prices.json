@@ -1,0 +1,4102 @@
+[
+ {
+  "handle": "foo121/federal-register-scraper",
+  "title": "Federal Register Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result item"
+   }
+  },
+  "desc": "Export US Federal Register documents (rules, proposed rules, notices, presidential documents) by keyword, agency, type and date from the official Federal Register API. No API key required."
+ },
+ {
+  "handle": "devilscrapes/federal-register-documents-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "BRONZE": 0.00192,
+   "DIAMOND": 0.00176,
+   "FREE": 0.002,
+   "GOLD": 0.00176,
+   "PLATINUM": 0.00176,
+   "SILVER": 0.00184
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "BRONZE": 0.00192,
+     "DIAMOND": 0.00176,
+     "FREE": 0.002,
+     "GOLD": 0.00176,
+     "PLATINUM": 0.00176,
+     "SILVER": 0.00184
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result emitted"
+   }
+  },
+  "desc": "Federal Register Scraper: track US federal regulatory activity \u2014 export Federal Register rules, proposed rules and notices with title, agency, type, abstract, publication date and document links as clean JSON, CSV or Excel."
+ },
+ {
+  "handle": "thirdwatch/federal-register-scraper",
+  "title": "Federal Register Scraper - Rules, Notices & Regulations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.0025,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search the official Federal Register API. Export rules, proposed rules, notices, executive documents, agencies, abstracts, dates, citations, and source URLs."
+ },
+ {
+  "handle": "straightforward_hydra/federal-register-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "US federal rules, proposed rules, notices and presidential documents from the official Federal Register API. No key."
+ },
+ {
+  "handle": "thoob/regulatory-change-monitor",
+  "title": "Federal Register Scraper: Regulation & Rule Changes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "matched-document",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): matched-document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "matched-document": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0036,
+     "SILVER": 0.0032,
+     "GOLD": 0.0028,
+     "PLATINUM": 0.0028,
+     "DIAMOND": 0.0028
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Matched document"
+   }
+  },
+  "desc": "Enter watch terms, get clean, citable records from the official Federal Register API when a matching rule, proposed rule, notice, or presidential document publishes or changes. Filter by term, agency, type, CFR part, and date, with a what-changed-since-last-run mode. Billed per delivered document."
+ },
+ {
+  "handle": "parseforge/federal-register-regulatory-notices-rules-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0055,
+   "BRONZE": 0.00533,
+   "SILVER": 0.00517,
+   "GOLD": 0.005,
+   "PLATINUM": 0.0045,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0055,
+     "BRONZE": 0.00533,
+     "SILVER": 0.00517,
+     "GOLD": 0.005,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes Federal Register documents by keyword, agency, date range, document type, or significance. Returns each document as a flat row with full text and metadata."
+ },
+ {
+  "handle": "bovi/federal-register-scraper",
+  "title": "Federal Register Scraper \u2014 US Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.0099
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.0099
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document"
+   }
+  },
+  "desc": "Extract final rules, proposed rules, notices, and presidential documents from the Federal Register. Get one flat record per document with citation, docket IDs, RINs, and links. Filter by term, agency, type, and dates. Uses the keyless official API. Pricing: $0.0099 per document on the Free plan."
+ },
+ {
+  "handle": "taroyamada/federal-register-digest",
+  "title": "Federal Register Scraper \u2014 US Rules, Notices & Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Federal Register digest"
+   }
+  },
+  "desc": "US Federal Register scraper: track rules and notices. Open Input \u2192 leave defaults \u2192 Start (1 agency feed + maxDocs 5 \u2248 USD 0.008/row): https://console.apify.com/actors/Amk9WaiNinR8xodgX/input From USD 8/1k."
+ },
+ {
+  "handle": "parseforge/federalregister-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes Federal Register documents by keyword, agency, type, or date. Returns each rule, proposed rule, notice, or presidential document as a flat row with metadata."
+ },
+ {
+  "handle": "skootle/federal-rulemaking-monitor",
+  "title": "\ud83d\udcdc Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.006,
+   "SILVER": 0.005,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.006,
+     "SILVER": 0.005,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Rulemaking record"
+   }
+  },
+  "desc": "Stop checking Federal Register and Regulations.gov separately. Get rules, docket IDs, public-comment counts, agency IDs, CFR parts, and days-to-close fields in one row. Add a free Regulations.gov key for comment enrichment. Export, run via API, schedule, or integrate with other tools."
+ },
+ {
+  "handle": "automatadesk/federal-register-monitor",
+  "title": "Federal Register Monitor - New Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-record",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document-record": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document record"
+   }
+  },
+  "desc": "Monitor new U.S. federal rules, proposed rules (with comment deadlines), notices and presidential documents from the official FederalRegister.gov API. Agent and MCP friendly structured output."
+ },
+ {
+  "handle": "birds-nest-data/federal-register-documents",
+  "title": "Federal Register Documents Scraper by Birds Nest Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Export Federal Register rules, proposed rules, notices and comment deadlines as JSON or CSV. Filter by agency and date. Uses the public Federal Register API, no key needed."
+ },
+ {
+  "handle": "clearpathdata/federal-register-search",
+  "title": "Federal Register API Search: Rules & Comment Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document"
+   }
+  },
+  "desc": "Search Federal Register rules, proposed rules, notices and presidential documents by keyword, agency, type and date. Find open comment periods. Official API. $2.50 per 1,000 documents."
+ },
+ {
+  "handle": "beerkaydgn/federalregister-us-gov-regulations-scraper",
+  "title": "US Federal Register Rules, Executive Orders & Gov Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.024
+  },
+  "start_fee": 0.2,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.2
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "\ud83d\udc3e Sammy the Official Seal! Extract US Federal Register rules, Presidential Executive Orders, agency notices, and official PDFs."
+ },
+ {
+  "handle": "moment-data/federal-register-notices-feed",
+  "title": "Federal Register Notices Feed: Rules, NPRMs, Notices, Grants",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "notice-record": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Notice record"
+   }
+  },
+  "desc": "New Federal Register rules, proposed rules, notices and presidential documents from the official federalregister.gov API. Filter by agency, type, keyword, significant or open comment period. Optional new grants.gov opportunities. 'New since last run' mode for daily schedules."
+ },
+ {
+  "handle": "yzy001/federal-register-deadlines",
+  "title": "Federal Register Deadline Calendar - Comments & Rules",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Deadline"
+   }
+  },
+  "desc": "Track US federal regulatory deadlines from the official Federal Register API: comment periods closing and final rules taking effect, sorted by days remaining, with agency, CFR titles, RIN, docket and the significant flag. Filter by agency, CFR title or keyword."
+ },
+ {
+  "handle": "parselab/federal-register-documents-scraper",
+  "title": "Federal Register Scraper: Rules and Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.027,
+   "BRONZE": 0.02475,
+   "SILVER": 0.0225,
+   "GOLD": 0.02025,
+   "PLATINUM": 0.02025,
+   "DIAMOND": 0.02025
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.027,
+     "BRONZE": 0.02475,
+     "SILVER": 0.0225,
+     "GOLD": 0.02025,
+     "PLATINUM": 0.02025,
+     "DIAMOND": 0.02025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape the Federal Register for final rules, proposed rules, notices and executive orders. Get comment deadlines with days left, effective dates, docket and CFR references, agencies, page views and optional full text. Filter by agency, topic, date or CFR part. Export to CSV or Excel."
+ },
+ {
+  "handle": "kdhan/federal-register-search",
+  "title": "Federal Register Search - Rules, Notices & Presidential Docs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document-record": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document record"
+   }
+  },
+  "desc": "Search US Federal Register documents (final rules, proposed rules, notices, presidential documents) by keyword, agency, type and date from the official federalregister.gov API. Returns abstract, effective and comment-close dates, CFR references and links. No API key."
+ },
+ {
+  "handle": "alaudinburki/federal-register-monitor",
+  "title": "Federal Register Monitor \u2014 New US Rules & Notices, Watched",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Pull US Federal Register documents by keyword or agency and track what is new since your last run \u2014 rules, proposed rules and notices."
+ },
+ {
+  "handle": "yourevenings/federal-register-api",
+  "title": "Federal Register API Scraper & Regulation Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): alert-run-with-matches,document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0018,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document returned"
+   },
+   "alert-run-with-matches": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.009,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Alert run with new matches"
+   }
+  },
+  "desc": "Search and monitor Federal Register rules, proposed rules and notices by agency, docket or CFR part, with comment deadlines and public inspection. No API key."
+ },
+ {
+  "handle": "publicrecords101/federal-register-scraper",
+  "title": "Federal Register Scraper - Rules, Notices & Comment Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "Extract US federal rules, proposed rules, notices and executive orders from the Federal Register: comment deadlines, effective dates, dockets, CFR parts and Regulations.gov comment counts. Filter by agency, type and keyword. No API key."
+ },
+ {
+  "handle": "best_apis/federal-register-api",
+  "title": "Federal Register API: US Rules, Notices & Docs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Federal Register document"
+   }
+  },
+  "desc": "Search and export US Federal Register documents via the official API: rules, proposed rules, notices and presidential documents. Filter by term, agency, type and dates. $3 per 1,000 documents."
+ },
+ {
+  "handle": "transparent_meteorite/federal-register-rules-notices-monitor",
+  "title": "Federal Register Rules and Notices Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-result",
+  "unit_tiers": {
+   "FREE": 0.00093
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-12-05T01:39:38.000Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document-result": {
+    "tiers": {
+     "FREE": 0.00093
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document row"
+   }
+  },
+  "desc": "Federal Register monitor for new federal rules, proposed rules and regulatory notices from the free Federal Register API: agencies, effective and comment dates, abstract, CFR references, significance and an impact score. No login, no proxy, no personal data."
+ },
+ {
+  "handle": "frankycheese/regulatory-change-watch",
+  "title": "Federal Register Compliance Change Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "regulatory-rule-new",
+  "unit_tiers": {
+   "FREE": 0.15
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): regulatory-rule-correction,regulatory-rule-new",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "regulatory-rule-new": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "New rule or notice"
+   },
+   "regulatory-rule-correction": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Regulatory source correction"
+   }
+  },
+  "desc": "Monitor Federal Register rules and notices for your agencies, industries, or policy terms. Built for compliance and government-affairs teams: receive source-linked new matches and material corrections while unchanged replays stay free."
+ },
+ {
+  "handle": "anyxsolutions/federal-register-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045,
+   "BRONZE": 0.00383,
+   "SILVER": 0.00317,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045,
+     "BRONZE": 0.00383,
+     "SILVER": 0.00317,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape the US Federal Register: final rules, proposed rules, notices, executive orders and public-inspection documents. Filter by keyword, agency, type, date and significance. Get comment deadlines, dockets, CFR parts, PDF links and optional full text. No API key, no login, no proxy."
+ },
+ {
+  "handle": "aurenic/federal-register-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0013
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0013
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract every US Federal Register document since 1994 \u2014 rules, proposed rules, notices, presidential documents. Auto-partitions past the 2,000-doc window. Keyless, no browser, no proxy."
+ },
+ {
+  "handle": "northbell/federal-register-scraper",
+  "title": "Federal Register Scraper \u2014 New Rules & Comment Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0018000000000000002,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Run started"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0018000000000000002,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document"
+   }
+  },
+  "desc": "US Federal Register (federalregister.gov) documents from the official API: rules, proposed rules, notices and presidential documents with agency, dates, comment deadline, docket, RIN and CFR references. Filter by keyword, agency or CFR part and flag what is new since your last run."
+ },
+ {
+  "handle": "kempt_horizon_yzk/federal-register-documents",
+  "title": "Federal Register Scraper \u2013 Rules, Notices & Comment Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Federal Register document"
+   }
+  },
+  "desc": "Federal Register scraper and regulation monitor: final rules, proposed rules, notices, executive orders. Filter by keyword, agency, type, CFR part, docket, RIN, significance, open comment periods. Comment deadlines, effective dates, links. Monitor mode returns only new or changed items. $0.0015/doc."
+ },
+ {
+  "handle": "radiant_opuntia/federal-register-alerts",
+  "title": "Federal Register Scraper: New Rules & Notices Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search and monitor the US Federal Register: final rules, proposed rules, notices and executive orders. Filter by agency, keyword, CFR title, docket, significance and open comment periods. Flat JSON with comment deadlines and effective dates. 'Only new' mode for daily regulatory alerts. No API key."
+ },
+ {
+  "handle": "felixgoldwin/federal-register-deadline-monitor",
+  "title": "Federal Register: Comment Deadlines & Effective Dates",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Delivered document"
+   }
+  },
+  "desc": "Track Federal Register comment deadlines and effective dates from the public API. Compare saved snapshots for metadata changes and approaching deadlines. Export an iCalendar file with source document and official PDF links for review."
+ },
+ {
+  "handle": "jpmarketdata/federal-register-multi-query-document-export",
+  "title": "Federal Register \u2014 Multi-Query Document Export",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-exported",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-exported",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document-exported": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Unique document exported"
+   }
+  },
+  "desc": "Search US Federal Register publications by terms, agencies, dates, type and CFR. Export unique document identities, abstracts, dates, references and official links with bounded coverage."
+ },
+ {
+  "handle": "oneshotventure/fedreg-watch",
+  "title": "Federal Register Watch \u2014 New Rules, Proposed Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scheduled change feed of newly published Federal Register documents."
+ },
+ {
+  "handle": "smilemask/federal-register-search",
+  "title": "Federal Register Search: US Rules, Notices & Presidential Docs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search the US Federal Register by keyword, document type and date: title, type, abstract, publication date, agencies, effective and comment-deadline dates, citation and links to HTML/PDF. Track regulations and rulemaking. Official free API, public-domain data, no key."
+ },
+ {
+  "handle": "rhincodontypus/federal-rule-lifecycle-resolver",
+  "title": "Federal Rule Lifecycle Resolver",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "rule-resolution",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): rule-resolution",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "rule-resolution": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Rule resolution"
+   }
+  },
+  "desc": "Resolve a U.S. federal rulemaking from a RIN, docket ID, Federal Register document number/URL or title. Returns one record: current stage, comment deadlines and extensions, final-rule and effective dates, delays, withdrawals and related official documents with provenance."
+ },
+ {
+  "handle": "ailu_studio/federal-register-document-search",
+  "title": "Federal Register: Rules & Agency Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Output row"
+   }
+  },
+  "desc": "Track federal rulemaking and agency notice metadata for regulatory research. Export JSON/CSV with source links, bounded requests and clear run summaries."
+ },
+ {
+  "handle": "lucacelli/us-federal-register-government-regulation-monitor",
+  "title": "US Federal Register Government Regulation, Rule [$0.9/1K]",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "regulation-extracted",
+  "unit_tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): regulation-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "regulation-extracted": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "US Federal Register Government Regulation, Rule  Record"
+   }
+  },
+  "desc": "Regulatory compliance & legal intelligence: queries the official FederalRegister.gov API to track new government rules, agency notices, and publication dates. | Free $5/mo Credit \u2022 1-Click n8n, Make, Sheets & MCP Ready."
+ },
+ {
+  "handle": "daj8/federal-register-scraper-incremental",
+  "title": "Federal Register Scraper \u2014 Incremental Rules",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.008,
+   "SILVER": 0.0065,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.008,
+     "SILVER": 0.0065,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track new documents from the US Federal Register via its official public API. Returns title, type, publication date, agencies and source URL. No key or login needed. Use for regulatory monitoring, compliance alerts and policy research."
+ },
+ {
+  "handle": "corridordata/federal-register-regulatory-signals",
+  "title": "Federal Register Rules, Proposed Rules & Notices Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Federal Register Document"
+   }
+  },
+  "desc": "Monitor new US Federal Register final rules, proposed rules & agency notices via the official API\u2014filter by keyword, agency and type with effective dates, comment deadlines, dockets, RINs and CFR parts."
+ },
+ {
+  "handle": "frank0309/federal-register-documents",
+  "title": "Federal Register Rules & Notices: Search & New-Rule Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Document"
+   }
+  },
+  "desc": "Search U.S. Federal Register rules, proposed rules, notices and presidential documents by keyword, agency, type, CFR part and date. Get abstracts, effective and comment-close dates, dockets, RINs, CFR references and regulations.gov comment links. Alert mode returns only new documents."
+ },
+ {
+  "handle": "fecklesspleb/federal-register-documents-feed",
+  "title": "Federal Register API Feed: Rules, Proposed Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Federal Register document"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Daily Federal Register API feed: new rules, proposed rules, notices, executive orders and other presidential documents, plus the public inspection desk. Filter by agency, type, keyword, CFR part or open comment period; dedupe across runs. Unofficial."
+ },
+ {
+  "handle": "factpipe/federal-register-monitor",
+  "title": "Federal Register Scraper \u2014 US Rules & Regulations Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-result",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002,
+   "GOLD": 0.00175,
+   "PLATINUM": 0.00175,
+   "DIAMOND": 0.00175
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document-result": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.00225,
+     "SILVER": 0.002,
+     "GOLD": 0.00175,
+     "PLATINUM": 0.00175,
+     "DIAMOND": 0.00175
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document result"
+   }
+  },
+  "desc": "Search and monitor the US Federal Register: final rules, proposed rules, notices and presidential documents by keyword and agency. Official API, no key, flat JSON, new-document alerts. $2.50 per 1,000."
+ },
+ {
+  "handle": "aitoolsempire/federal-register-monitor",
+  "title": "Federal Register Monitor \u2014 US Rules, Notices & Regulations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track new US federal rules, proposed rules, notices and presidential documents by keyword, agency, type and date. Structured JSON with official links. Fast, no browser."
+ },
+ {
+  "handle": "maliksaid/new-legislation-monitor",
+  "title": "New Legislation Monitor: Laws in UK, EU, US, Japan",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "legislation-act",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): legislation-act",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "legislation-act": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Legislation act"
+   }
+  },
+  "desc": "Legislation tracker for new laws and regulations from UK legislation.gov.uk, EU EUR-Lex, the US Federal Register, Japan e-Gov and the Spain BOE official gazette. Covers statutory instruments, directives, executive orders and royal decrees. Rows give type, number, title, dates and link."
+ },
+ {
+  "handle": "gazidev/federal-register-monitor",
+  "title": "Federal Register Monitor \u2013 New Rules, Proposed Rules & EOs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "Track new US federal rules, proposed rules, notices and executive orders from the official FederalRegister.gov API: agency, abstract, effective date, comment deadline, docket, CFR parts, significance and full text. Filter by keyword, agency, type, CFR. $2 per 1,000 documents."
+ },
+ {
+  "handle": "nefes-tools/federal-register-monitor",
+  "title": "Federal Register Monitor \u2014 US Rules, Proposed Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "Track new US federal regulations from the official Federal Register API: final rules, proposed rules, notices and executive orders. Filter by keyword, agency, CFR part and open comment period; get only new documents on each run. Pay per document."
+ },
+ {
+  "handle": "survivalstudent/federal-register-monitor",
+  "title": "Federal Register Search & New Rules Monitor (Official API)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "register-document",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): register-document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "register-document": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Register document"
+   }
+  },
+  "desc": "Search and monitor the Federal Register: new rules, proposed rules, notices and presidential documents (executive orders) by keyword, agency, type, CFR part or docket. Clean JSON with abstract, PDF/HTML links, comment deadlines, RINs and significance flag. Daily-alert mode."
+ },
+ {
+  "handle": "zinjaink/federal-register-regulatory-compliance-leads",
+  "title": "US Federal Register Regulatory & Compliance Lead Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.016
+  },
+  "start_fee": 0.016,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.016
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.016
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Federal Register Rule & Compliance Lead"
+   }
+  },
+  "desc": "Extract newly published federal rules, corporate exemption notices, trade tariff filings, and compliance deadlines across FDA, EPA, SEC, DOE, and DOT from the official Federal Register API."
+ },
+ {
+  "handle": "veridra/federal-register-monitor",
+  "title": "Federal Register API: New US Rules and Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0036,
+     "SILVER": 0.0032,
+     "GOLD": 0.0028,
+     "PLATINUM": 0.0028,
+     "DIAMOND": 0.0028
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "New US federal rules, proposed rules, notices and executive orders from the official Federal Register API. Filter by agency, keyword and type; get comment deadlines, dockets and CFR parts. Schedule it for only new rules."
+ },
+ {
+  "handle": "captainhandsome/federal-register-search",
+  "title": "Federal Register API - US Regulations & Rules Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002,
+   "GOLD": 0.00175,
+   "PLATINUM": 0.00175,
+   "DIAMOND": 0.00175
+  },
+  "start_fee": 0.00035,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.00225,
+     "SILVER": 0.002,
+     "GOLD": 0.00175,
+     "PLATINUM": 0.00175,
+     "DIAMOND": 0.00175
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.0004,
+     "GOLD": 0.00035,
+     "PLATINUM": 0.00035,
+     "DIAMOND": 0.00035
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Wraps the official Federal Register API, no key required, pulling rules, proposed rules, notices and presidential documents. Filter by type and sort newest, or use it as a federal register scraper to track new federal regulations as clean JSON, CSV or Excel rows."
+ },
+ {
+  "handle": "weirworks/regulatory-change-digest",
+  "title": "US Regulatory Change Digest",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "New and upcoming US federal rules, proposed rules and notices from the official Federal Register: filter by agency, industry and keyword, with comment deadlines and effective dates."
+ },
+ {
+  "handle": "devsolal/federal-register-monitor",
+  "title": "Federal Register Monitor: New Rules & Notices to JSON",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-returned",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "document-returned": {
+    "tiers": {
+     "FREE": 0.0018
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Document returned"
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "lathewright/federal-register-monitor",
+  "title": "Federal Register API: Rules, Proposed Rules & Notices Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document found"
+   }
+  },
+  "desc": "Returns US Federal Register documents from the official API: final rules, proposed rules, notices and presidential documents by keyword, agency, date, docket or CFR title, with comment deadlines, effective dates, RINs and PDF/HTML links. No key. For compliance teams and agents."
+ },
+ {
+  "handle": "yakeddgraph/federal-register-rules-regulations-scraper",
+  "title": "US Federal Register Rules, Regulations & Orders [$1/1K]",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 1e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extracts newly published US federal regulations, proposed rules, presidential executive orders, agency names, abstracts, and official PDF links from the FederalRegister.gov REST API."
+ },
+ {
+  "handle": "reverential_haw/federal-register-monitor",
+  "title": "Federal Register Monitor \u2014 Rules, Notices & Presidential Docs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document row"
+   }
+  },
+  "desc": "Pull U.S. Federal Register documents from the official FR API. Filter by agency, document type, term, and publication date. Built for compliance calendars and regulatory watchlists."
+ },
+ {
+  "handle": "brightish_ascent/federal-register-monitor",
+  "title": "Federal Register API Scraper \u2014 rules, notices & agency monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search the U.S. Federal Register (official API) by keyword, agency, document type and date. Returns one JSON row per rule, proposed rule, notice or presidential document: number, title, agencies, dates, comment deadline, abstract, links. Not affiliated with NARA/OFR."
+ },
+ {
+  "handle": "red.cars/federal-register-monitor-pro",
+  "title": "Federal Register Monitor Pro",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Every new federal rule, proposed rule, notice, and executive order from the Federal Register as clean one-row-per-document output. Full-text search, agency filters, date windows, comment deadlines, and president and signing date on orders."
+ },
+ {
+  "handle": "bosco_labs/us-federal-rules",
+  "title": "Federal Register & eCFR API: CFR text as of a date, changes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "section",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document,section",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "section": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "CFR section"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Federal Register document"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Federal Register documents and Code of Federal Regulations (eCFR) text: a CFR section as in force today or on any date, its amendment history and the rules that changed it; what changed in a CFR part since a date; Federal Register search by agency or number. Official data, a source link per row."
+ },
+ {
+  "handle": "tudorlane/regulation-change-watch",
+  "title": "Regulatory Change Monitor: UK Legislation & US Federal Register",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "check",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): check,new-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "check": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Topic checked"
+   },
+   "new-item": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.018,
+     "SILVER": 0.016,
+     "GOLD": 0.014,
+     "PLATINUM": 0.014,
+     "DIAMOND": 0.014
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "New regulation item"
+   }
+  },
+  "desc": "Track new laws and rules by topic: new or amended UK legislation (legislation.gov.uk) and US Federal Register rules, proposed rules and notices. Returns only items new since the last run with date and link."
+ },
+ {
+  "handle": "titan_coder/federal-register-monitor",
+  "title": "Federal Register Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-document-detected",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-document-detected",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "new-document-detected": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "New document detected"
+   }
+  },
+  "desc": "Federal Register tools dump the whole feed and let you find what changed. This one watches your agencies and reports only documents published since your last check \u2014 rules, proposed rules, notices. A day with nothing new is free."
+ },
+ {
+  "handle": "frenchdatalab/federal-register-monitor",
+  "title": "Federal Register Monitor: US Rules, Proposed Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "Monitor the official US Federal Register: final rules, proposed rules open for comment, notices and presidential documents by keyword, agency, type and date, with comment deadlines, effective dates, dockets and CFR parts. No 10,000-result cap; daily alerts."
+ },
+ {
+  "handle": "offerastudio/federal-register-monitor",
+  "title": "Federal Register Monitor ($1/1K): US Rules & Notices Feed",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-returned",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document-returned": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document returned"
+   }
+  },
+  "desc": "[$1/1K] Monitor US Federal Register rules, proposed rules, notices and presidential documents by topic, agency or CFR part with the official API. Gets effective dates, comment deadlines, CFR references, docket IDs and Regulations.gov links. Monitor mode returns only documents not seen before."
+ },
+ {
+  "handle": "prixodik/federal-register-rule-deadline-monitor",
+  "title": "Federal Register Rule and Deadline Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Delivered Federal Register document"
+   }
+  },
+  "desc": "Filter US Federal Register documents and track source-provided effective dates, comment deadlines, and changes."
+ },
+ {
+  "handle": "centorprat/airworthiness-directive-monitor",
+  "title": "Airworthiness Directive Monitor: FAA AD Alerts by Aircraft",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "watch-run",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0095,
+   "SILVER": 0.009,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0085,
+   "DIAMOND": 0.0085
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-directive-alert,watch-run",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "watch-run": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.0095,
+     "SILVER": 0.009,
+     "GOLD": 0.0085,
+     "PLATINUM": 0.0085,
+     "DIAMOND": 0.0085
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Watch run"
+   },
+   "new-directive-alert": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.019,
+     "SILVER": 0.018,
+     "GOLD": 0.017,
+     "PLATINUM": 0.017,
+     "DIAMOND": 0.017
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "New directive alert"
+   }
+  },
+  "desc": "Watch FAA Airworthiness Directives (ADs) for your fleet. Give aircraft, manufacturers or models (Boeing 737, Airbus A320, Rolls-Royce); each run pulls recent ADs - final and proposed - from the keyless Federal Register, keeps your matches, and flags only what is NEW. Schedule + webhook for alerts."
+ },
+ {
+  "handle": "zhucl1006/federal-register-search-monitor",
+  "title": "Federal Register Search - US Rules, Notices & Comment Dates",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document-result": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document result"
+   }
+  },
+  "desc": "Search and monitor the U.S. Federal Register via the official API: final and proposed rules, notices and presidential documents by keyword, agency, type and date. Get comment deadlines, effective dates, dockets, RINs, CFR parts and PDF links. For compliance, law firms, lobbyists and analysts."
+ },
+ {
+  "handle": "pankajbhatia/federal-register-documents",
+  "title": "Federal Register Scraper: U.S. Rules, Notices & Comments",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document"
+   }
+  },
+  "desc": "Search the U.S. Federal Register: final rules, proposed rules, notices and presidential documents by keyword, agency and date. Get abstracts, effective dates, comment deadlines, dockets, CFR parts and PDF links. Official API."
+ },
+ {
+  "handle": "knotty_mistveil/federal-register-documents",
+  "title": "Federal Register Documents Scraper (US Rules)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document returned"
+   }
+  },
+  "desc": "US Federal Register rules, proposed rules, notices and presidential documents from the official API: agency, docket, RIN, CFR part, comment deadline."
+ },
+ {
+  "handle": "xtracto/federal-register-documents",
+  "title": "Federal Register Documents Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.002667,
+   "SILVER": 0.002334,
+   "GOLD": 0.002001,
+   "PLATINUM": 0.002001,
+   "DIAMOND": 0.002001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.002667,
+     "SILVER": 0.002334,
+     "GOLD": 0.002001,
+     "PLATINUM": 0.002001,
+     "DIAMOND": 0.002001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US Federal Register rules, proposed rules, notices and presidential documents: title, abstract, agencies, dockets, CFR references, comment deadlines and full-text links. Keyless public API, no login."
+ },
+ {
+  "handle": "dataio/federal-register-comment-deadlines",
+  "title": "Federal Register Scraper - Comment Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-extracted",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document-extracted": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Regulatory document"
+   }
+  },
+  "desc": "Scrape the US Federal Register: proposed and final rules with the days remaining until the comment period closes or the rule takes effect, the countdown the Federal Register never publishes. Filter by agency, CFR title, keyword and date, sorted by urgency."
+ },
+ {
+  "handle": "yadroo/federal-register-documents",
+  "title": "Federal Register Documents: Rules, Notices & Comment Dates",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.001,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Document row returned"
+   }
+  },
+  "desc": "Rules, proposed rules, notices and presidential documents from the official Federal Register API: filter by keyword, agency, CFR title, topic, docket, publication window, effective date or open comment window. Rows carry citation, dates, docket ids, abstract and text links."
+ },
+ {
+  "handle": "arched_friend/regulation-change-monitor",
+  "title": "Regulation Change Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-returned",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document-returned": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Document returned"
+   }
+  },
+  "desc": "Watch the US Federal Register for rules, proposed rules and notices affecting your business. Returns the agency, the action, the CFR parts touched, when comments close and how many days are left, with new documents and moved deadlines flagged each run."
+ },
+ {
+  "handle": "retrainmap/federal-register-documents",
+  "title": "Federal Register scraper - rules, notices and proposed rules",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "run-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor run"
+   },
+   "record": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record"
+   }
+  },
+  "desc": "Federal Register scraper on the official public API: one normalised row per document - number, title, type, agencies, publication and effective dates, abstract, HTML/PDF links, docket IDs, CFR references, page range. Filter by term, agency, type, date range. Default: last 7 days. $5 per 1,000 rows."
+ },
+ {
+  "handle": "recordsdata/federal-register-scraper",
+  "title": "Federal Register Scraper: Rules, Notices & Orders",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-record",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.0144,
+   "SILVER": 0.0132,
+   "GOLD": 0.012,
+   "PLATINUM": 0.012,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-fulltext,document-record,public-inspection-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document-record": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.0144,
+     "SILVER": 0.0132,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document record"
+   },
+   "document-fulltext": {
+    "tiers": {
+     "FREE": 0.012
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Full document text"
+   },
+   "public-inspection-record": {
+    "tiers": {
+     "FREE": 0.015
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Public inspection document"
+   }
+  },
+  "desc": "Scrape the Federal Register: final rules, proposed rules, notices, executive orders and the public inspection desk, filtered by keyword, agency, document type and date. Get docket IDs, comment deadlines, PDFs and optional full text. Export CSV, Excel, JSON, XML. No login or API key."
+ },
+ {
+  "handle": "mdcurt/federal-register-rule-signals",
+  "title": "Federal Register Rule Signals: New Rules by Affected Industry",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.1,
+   "BRONZE": 0.09,
+   "SILVER": 0.08,
+   "GOLD": 0.07,
+   "PLATINUM": 0.07,
+   "DIAMOND": 0.07
+  },
+  "start_fee": 0.0035,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.09,
+     "SILVER": 0.08,
+     "GOLD": 0.07,
+     "PLATINUM": 0.07,
+     "DIAMOND": 0.07
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Rule signal"
+   }
+  },
+  "desc": "Classifies every new Federal Register rule and proposed rule by the industry it regulates (from its CFR parts), with effective dates and comment deadlines; corrections, withdrawals and per-site notices are dropped. Keyless, one API call, pay per signal."
+ },
+ {
+  "handle": "cheerful_term/federal-register-documents",
+  "title": "Federal Register: Rules, Notices & Comment Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document"
+   }
+  },
+  "desc": "Search the daily Federal Register: proposed rules, final rules, notices and presidential documents with agency, abstract, publication, effective and comment-close dates, docket and RIN, CFR parts and links. Filter by term, type, agency, date or open-for-comment."
+ },
+ {
+  "handle": "hichemdev/federal-register-scraper",
+  "title": "Federal Register Scraper - US Rules, Proposed Rules & Notices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "document"
+   }
+  },
+  "desc": "Monitor US federal regulations: final rules, proposed rules, notices and executive orders from the Federal Register. Filter by keyword, agency, date, comment deadline, docket, RIN or CFR part. Get effective dates, comment deadlines, dockets, PDFs. No API key."
+ },
+ {
+  "handle": "datacrate/federal-register-rules-monitor",
+  "title": "Federal Register Monitor: Rules, Proposed Rules & Deadlines",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-returned",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00076,
+   "SILVER": 0.000704,
+   "GOLD": 0.00064,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00064
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "document-returned",
+    "title": "Federal Register document returned",
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.00076,
+     "SILVER": 0.000704,
+     "GOLD": 0.00064,
+     "PLATINUM": 0.00064,
+     "DIAMOND": 0.00064
+    }
+   }
+  ],
+  "events": {
+   "document-returned": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.00076,
+     "SILVER": 0.000704,
+     "GOLD": 0.00064,
+     "PLATINUM": 0.00064,
+     "DIAMOND": 0.00064
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Federal Register document returned"
+   }
+  },
+  "desc": "What did US agencies just publish? New final rules, proposed rules, notices and presidential documents from the official Federal Register API with comment deadlines, dockets, CFR references and significance flag."
+ },
+ {
+  "handle": "tortuga/federal-register-scraper",
+  "title": "Federal Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0014,
+   "BRONZE": 0.0014,
+   "SILVER": 0.00126,
+   "GOLD": 0.00112,
+   "PLATINUM": 0.00112,
+   "DIAMOND": 0.00112
+  },
+  "start_fee": 4e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fulltext,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0014,
+     "BRONZE": 0.0014,
+     "SILVER": 0.00126,
+     "GOLD": 0.00112,
+     "PLATINUM": 0.00112,
+     "DIAMOND": 0.00112
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document"
+   },
+   "fulltext": {
+    "tiers": {
+     "FREE": 0.0014,
+     "BRONZE": 0.0014,
+     "SILVER": 0.00126,
+     "GOLD": 0.00112,
+     "PLATINUM": 0.00112,
+     "DIAMOND": 0.00112
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Full text"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 4.5e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 4e-05,
+     "DIAMOND": 4e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "US Federal Register rules, proposed rules, notices and presidential documents by keyword, agency, type, date, docket and CFR part: number, URL, title, agencies, dates, comment deadline, dockets, CFR references, abstract, PDF link, optional full text."
+ },
+ {
+  "handle": "dottti/regulatory-change-monitor",
+  "title": "Regulatory Change Monitor: Federal Register, UK, EU Law",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "One regulatory document (rule, proposal, notice, consultation, guidance or legislation) saved to the dataset"
+   }
+  },
+  "desc": "New rules, proposed rules, notices, consultations, guidance and legislation from the US Federal Register, GOV.UK, legislation.gov.uk, EU law and Australia in one flat table, with comment deadlines, days left, dockets, CFR parts, keyword and agency filters and only-new alerts."
+ },
+ {
+  "handle": "thebadassgrokbot/federal-register-radar",
+  "title": "Federal Register Search: Rules, Notices & Proposed Rules",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "register-document",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): register-document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "register-document": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Federal Register document"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search the Federal Register for the latest rules, proposed rules, notices and presidential documents by agency, type or keyword. Public API, no key. Pay per document."
+ },
+ {
+  "handle": "davidcondrey/wl-regulatory-change-brief",
+  "title": "Regulatory Change Brief (Federal Register, EDGAR, Dockets)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "agent-call",
+  "unit_tiers": {
+   "FREE": 1.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): agent-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "agent-call": {
+    "tiers": {
+     "FREE": 1.25
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Regulatory Change Brief (Federal Register, EDGAR, Dockets) run"
+   }
+  },
+  "desc": "Given an industry or topic and optional agencies, CFR parts, terms and companies, pulls recent US regulatory changes from official free sources: Federal Register final and proposed rules (with effective dates, comment deadlines and official URLs), SEC EDGAR 8-K items and other\u2026"
+ },
+ {
+  "handle": "irreplaceable_chevrotain/trademark-clearance-mcp",
+  "title": "Trademark Clearance MCP",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clearance-report",
+  "unit_tiers": {
+   "FREE": 0.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clearance-report,similar-marks,status-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "clearance-report": {
+    "tiers": {
+     "FREE": 0.25
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Full clearance risk report"
+   },
+   "similar-marks": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Scored similar-mark search"
+   },
+   "status-check": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Official TSDR status lookup"
+   }
+  },
+  "desc": "Trademark clearance scoring for AI agents \u2014 \"can I use this brand name?\" answered against the US federal register with phonetic, fuzzy, and Nice-class conflict analysis. Risk verdicts with rationale and serial numbers. Pay per report, no subscription."
+ },
+ {
+  "handle": "flyingnimbus/federal-register-search",
+  "title": "Federal Register Search API (US Rules) \ud83d\udcb0$2/1k",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Document returned"
+   }
+  },
+  "desc": "Search the US Federal Register for final rules, proposed rules, notices and presidential documents by keyword, agency and date. Built for compliance teams, law firms, lobbyists, trade associations and policy researchers who need to monitor new regulation."
+ },
+ {
+  "handle": "titan_coder/federal-register-regulatory-changes-radar",
+  "title": "Federal Register Regulatory Changes Delta Radar (Save 90%)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-regulation-change-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-regulation-change-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "federal-regulation-change-delivered": {
+    "tiers": {
+     "FREE": 0.015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Federal Rule Change Delivered"
+   }
+  },
+  "desc": "Zero-browser federal compliance radar tracking US Federal Register final rules, significant executive orders, and agency regulatory overhauls across SEC, EPA, FDA, FCC, and FTC."
+ },
+ {
+  "handle": "quanmatrix/federal-register-regulatory-change-monitor",
+  "title": "Federal Register Regulatory Change Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.018,
+   "SILVER": 0.016,
+   "GOLD": 0.014,
+   "PLATINUM": 0.014,
+   "DIAMOND": 0.014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.018,
+     "SILVER": 0.016,
+     "GOLD": 0.014,
+     "PLATINUM": 0.014,
+     "DIAMOND": 0.014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Monitor Federal Register topics through the official API, detect new or materially updated documents, rank materiality and keep state between runs for compliance, legal and policy watchlists. Returns structured, machine-readable results for repeatable research, monitoring, automation."
+ },
+ {
+  "handle": "plain-build/federal-register-usaspending-scraper",
+  "title": "Federal Register and USAspending Contract Awards",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00128,
+   "GOLD": 0.00128,
+   "PLATINUM": 0.00128,
+   "DIAMOND": 0.00128
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00128,
+     "GOLD": 0.00128,
+     "PLATINUM": 0.00128,
+     "DIAMOND": 0.00128
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Federal Register rules, notices and presidential documents by agency and date, plus USAspending contract awards (add usaspending to Sources), 10 newest documents by default. Each row has record type, agency, title, award amount, recipient, place of performance. No keyword or NAICS filter, no key."
+ },
+ {
+  "handle": "amygraphics/us-federal-register",
+  "title": "US Federal Register: Rules & Regulation Alerts (MCP)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "us-federal-doc",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): us-federal-doc",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "us-federal-doc": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "US federal document"
+   }
+  },
+  "desc": "Official Federal Register API for AI agents: search US rules, notices and presidential actions (agencies, RINs, abstracts, links), and monitor topics/agencies for new publications. No key. MCP-ready."
+ },
+ {
+  "handle": "dagnabit/federal-register-rulemaking-compliance-radar",
+  "title": "US Federal Register Rulemaking, Tariff & Compliance Radar",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "verified-rulemaking-doc",
+  "unit_tiers": {
+   "FREE": 0.025
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): verified-rulemaking-doc",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "verified-rulemaking-doc": {
+    "tiers": {
+     "FREE": 0.025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Verified Rulemaking Doc"
+   }
+  },
+  "desc": "US Federal Register Rulemaking, Tariff & Compliance Deadline Radar \u2014 Pay-Per-Event B2B & MCP agentic extractor with strict schema validation."
+ },
+ {
+  "handle": "brazil-data-labs/us-epa-superfund-environmental-facilities",
+  "title": "US EPA Environmental Compliance, Superfund & Clean Air Rules AP",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.05,
+  "note": "no recurring event -- one-time/start-fee only",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": 0.060000000000000005,
+  "runfee_label": "compliance-query-start+esg-record-returned",
+  "runfee_crossover_rows": 75,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "compliance-query-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "US EPA Environmental Rule Record Query Start"
+   },
+   "esg-record-returned": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "US EPA Environmental Rule Record"
+   }
+  },
+  "desc": "Official US Environmental Protection Agency (EPA) Federal Register enforcement rules, Superfund hazardous site actions, Clean Air/Water mandates & chemical bans. Built for US industrial real estate ESG due diligence & AI agents via Apify MCP."
+ },
+ {
+  "handle": "great_pistachio/us-federal-regulations-monitor",
+  "title": "US Federal Regulations Monitor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Monitor the Federal Register for new rules, proposed regulations, notices, and presidential documents. Filter by keyword, agency, type, and date, and track open public comment periods. Official data with links. For compliance, legal, and government-affairs teams."
+ },
+ {
+  "handle": "oblanceolate_mandola/federal-register-monitor",
+  "title": "Federal Register Monitor \u2014 US Regulations to JSON",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Search US Federal Register documents by keyword. Title, agency, type, date, URL as JSON for compliance & policy AI agents. $4 per 1,000, no coding."
+ },
+ {
+  "handle": "amygraphics/federal-register-monitor",
+  "title": "Federal Register Monitor \u2014 New Rules & Regulations Daily (MCP)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-extracted",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "document-extracted": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Regulatory document extracted"
+   }
+  },
+  "desc": "Federal Register official feed: new rules, proposed rules & regulatory documents with abstract, agency, CFR references, significant flags, comment deadlines and effective dates. Filter by term/agency/type. Monitor mode = daily digest of yesterday's regulations. No API key. MCP-ready."
+ },
+ {
+  "handle": "scrapemint/federal-register-monitor",
+  "title": "Federal Register Monitor: New Rules & Notices",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document_row",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document_row",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "document_row": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Document row"
+   }
+  },
+  "desc": "Track new US federal rules, proposed rules, notices and presidential documents from the official Federal Register API. Filter by keyword, agency, document type and date. Monitor mode emits only documents you have not seen before - run it on a schedule for a clean regulatory feed. No API key."
+ },
+ {
+  "handle": "andrew_avina/federal-register-mcp",
+  "title": "Federal Register: Rules, Proposed Rules, Exec Orders",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result item returned"
+   }
+  },
+  "desc": "Track every federal rule, proposed rule, and executive order (95K+ docs/yr). Filter by agency, type, keyword, CFR part, comment period. MCP-native: 'What EPA rules went final this quarter?' or 'Open comment periods in financial services?' Updated daily."
+ },
+ {
+  "handle": "maximedupre/federal-register",
+  "title": "Federal Register Scraper \u2014 Rules & Regulations",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-register-document",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-register-document",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "federal-register-document": {
+    "tiers": {
+     "FREE": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Federal document"
+   }
+  },
+  "desc": "Search official U.S. Federal Register documents or browse the newest entries. Get rules, notices, dates, agencies, CFR references, citations, and official PDF and HTML links."
+ },
+ {
+  "handle": "taroyamada/regulatory-obligation-change-impact-report",
+  "title": "eCFR & Federal Register Change Report",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "regulatory-change-row",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): obligation-impact-alert,regulatory-change-row,regulatory-impact-export,regulatory-impact-report",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "regulatory-change-row": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Regulatory change row"
+   },
+   "obligation-impact-alert": {
+    "tiers": {
+     "FREE": 0.3
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Obligation impact alert"
+   },
+   "regulatory-impact-report": {
+    "tiers": {
+     "FREE": 12
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Regulatory impact report"
+   },
+   "regulatory-impact-export": {
+    "tiers": {
+     "FREE": 7
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Regulatory impact export"
+   }
+  },
+  "desc": "Track regulatory obligations. Open Input \u2192 leave defaults \u2192 Start (1 regulatory change row \u2248 USD 0.008/row): https://console.apify.com/actors/AaQiZ1Ye2A69MiNNq/input From USD 8/1k."
+ },
+ {
+  "handle": "titan_coder/federal-register-final-rules-radar",
+  "title": "Federal Register Final Rules & Regulations Radar (Save 90%)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-final-rule-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-final-rule-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "federal-final-rule-delivered": {
+    "tiers": {
+     "FREE": 0.015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Federal Final Rule Delivered"
+   }
+  },
+  "desc": "Sub-second regulatory radar tracking US Federal Register Final Rules, mandatory compliance deadlines, codified CFR amendments, and federal administrative mandates."
+ },
+ {
+  "handle": "turboextract/federal-register-documents",
+  "title": "Federal Register Scraper - US Rules, Notices and Comments",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-found",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "document-found",
+    "title": "Document delivered",
+    "tiers": {
+     "FREE": 0.0005
+    }
+   }
+  ],
+  "events": {
+   "document-found": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Document delivered"
+   }
+  },
+  "desc": "Export US Federal Register documents by keyword, agency or type: title, type, abstract, agencies, publication date, effective date, comment deadline, docket and RIN, CFR parts, significant flag and PDF link. Monitor new regulations and open comment periods. No API key."
+ },
+ {
+  "handle": "malonestar/epa-nonattainment-air-permit-screener",
+  "title": "EPA Nonattainment Air Permit Screener \u2014 NSR/PSD Siting Risk",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0064,
+   "SILVER": 0.0056,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.0064,
+     "SILVER": 0.0056,
+     "GOLD": 0.0044,
+     "PLATINUM": 0.0032,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "EPA nonattainment air-permit screener. Batch point-in-polygon check of coordinates against 11 EPA Clean Air Act NAAQS pollutant standards: returns nonattainment/maintenance status, area name, classification (Marginal-Extreme), Federal Register citation, and NSR/PSD permitting-risk flag per site."
+ },
+ {
+  "handle": "maydit/us-federal-register-scraper",
+  "title": "Federal Register Scraper - Rules & Comment Tracker",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0032,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.004,
+     "SILVER": 0.0032,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track proposed & final federal rules and comment deadlines by agency or topic. Scrape Federal Register data to CSV/JSON. Monitor new regulations on a schedule."
+ },
+ {
+  "handle": "nexgenwatch/federal-rule-impact-mcp",
+  "title": "Federal Register MCP Server \u2014 Regulatory Changes by Industry",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mcp-tool-call",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): mcp-tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "mcp-tool-call": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "A Federal Register MCP server that answers 'what regulatory changes affect this industry': search and retrieve final rules, proposed rules and notices by CFR title, agency, keyword and date. For Claude, Cursor and any MCP client. Pay per tool call."
+ }
+]
