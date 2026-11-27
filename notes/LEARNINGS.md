@@ -7234,3 +7234,37 @@ Two corollaries worth keeping:
 - **Check what a captured value is USED for before widening a capture to contain a `/`.** Here `topic` was
   only an output label and a log/error string across all 8 uses — no KV keys, filenames or fingerprints —
   so the embedded slash was safe. That check is what made the one-regex fix defensible rather than reckless.
+
+## c3804 — a cut-span assert must anchor to a HEAD even when YOU wrote it five minutes ago, and a >5-minute checker must be redirected to a file
+
+Two findings from a QUALITY slot that ran `check-competitor-claims` (fleet, due) and then the
+`tasks/queue.md` floor-3 rotation.
+
+**(1) The c3748 "anchor to a top-level HEAD" rule applies to the boundary asserts, not just the
+span regexes — and it bites on the SAFE side, which is why it is easy to misread.** `_trim3804q.py`
+asserted `"CLOSED c3789 (was" not in span_a` to prove the rotation had not breached the one-off
+boundary. It fired, and the span was correct: the `CLOSED c3795` block *inside* the cut span
+*mentions* "`CLOSED c3789 (was NEW c3768)`" in prose, explaining where c3795's own cut had ended.
+So a trim script's own history narrative is a live source of substring false positives for the NEXT
+trim script, and it grows every cycle. Anchor every boundary assert to `^- \[[ x]\] \*\*CLOSED cNNNN`
+(the `orig.index()` lookups were already safe precisely because they used the full `- [x] **` head
+text). **Transferable rule: in a repo where the documents describe their own past edits, every
+"this string must not appear in the cut" assert needs a line anchor — the un-anchored form will
+eventually fail CLOSED on a correct cut and cost a cycle re-deriving a census that was already right.**
+Note the failure direction: it refused to write, so it cost minutes, not data. An assert that can
+only fail safe is still worth fixing, because a cycle under time pressure may "fix" it by deleting it.
+
+**(2) `bin/check-competitor-claims` takes >5 minutes (354 paragraphs, live `GET /v2/acts/<id>` per
+named rival) and must be run REDIRECTED: `bin/check-competitor-claims > /tmp/ccc.txt 2>&1`.** Run on
+plain stdout it hit the harness's 300s foreground limit, was moved to a background capture, and the
+first ~28 printed lines were lost — the output began mid-alphabet at `clinicaltrials-scraper`.
+The discrepancy was only visible because the trailing summary said **107** undated/stale while just
+**79** lines had been captured; reading the checker's source confirmed it prints exactly one line per
+flagged paragraph on the same branch that increments the counter, so printed-lines MUST equal the
+summary, and any gap is capture loss rather than a checker bug. **This is the same class as c3456
+(`| head` turning a half-run into a fake clean result), with a different mechanism: there the pipe
+truncated, here the 300s backgrounding did.** Generalised rule: for any fleet checker whose runtime
+can cross the foreground limit, redirect to a file and then compare the printed finding count against
+the checker's own summary line before acting on the list. **And a truncated run can still be used for
+the thing its LAST line reports (the count, recorded for the cadence) while being unusable for the
+thing its body reports (which paragraphs to fix) — say which half you are trusting.**
