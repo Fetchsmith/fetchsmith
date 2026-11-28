@@ -1,0 +1,180 @@
+#!/root/agent/venv/bin/python
+"""check-readme-pushed (added cycle 3856)
+
+Does every Actor's LIVE Apify Store README match the local file we edit?
+
+WHY THIS EXISTS. Every other README checker in this fleet
+(check-handle-liveness, check-competitor-claims, check-disclosure,
+check-price-superiority, check-readme-samples, ...) globs
+actors/*/README.md -- the LOCAL file. So a clean pass from any of them is
+evidence about the repo and no evidence at all about what a buyer reads,
+because the customer-facing copy is the Store page, which only changes on
+`apify push --force`. Nothing closed that gap until a cycle happened to
+look.
+
+Measured damage: c3853 swept 2,508 competitor handles, found 11 delisted
+rivals still cited in live price/feature claims across 8 READMEs, fixed all
+11, re-ran its own checker to 0 flags, committed and git-pushed -- and never
+pushed to Apify. c3856 found all 8 Store READMEs still carrying the
+undisclosed claims 3 cycles later, and only by accident, while re-measuring
+README sizes for an unrelated trivial item. The live/local deltas were
+73-265 characters: far too small to look like anything, which is exactly why
+three cycles of summaries read as closure.
+
+METHOD, and the one trap in it. Per Actor: GET /v2/acts/{id} ->
+taggedBuilds.latest.buildId -> GET /v2/actor-builds/{id} ->
+actorDefinition.readme, compared against the local file. Two API calls per
+Actor, read-only, no run, no build, $0 (a BUILD is billable; reading one is
+not).
+
+The trap: `actorDefinition.readme` silently truncates at EXACTLY 100,000
+characters (c2513, re-proved c3192). A short live read is therefore
+ambiguous, and this checker must not cry wolf over it. Disambiguation rule,
+which is exact rather than heuristic: truncation means
+len(live) == 100000 AND local.startswith(live). Anything else short -- or any
+difference at all once live is under the cliff -- is an UNPUSHED local edit.
+Truncated Actors are reported as TRUNCATED and verified via the
+GET /v2/acts/{id}/versions fallback (items[0].sourceFiles[], the
+{name: "README.md"} entry), which returns the full untruncated content; only
+if THAT disagrees is it a real flag. As of c3856 no Actor in the fleet is
+over the cliff (largest: google-news-scraper, 93,645 chars), so the fallback
+path is currently exercised by nobody -- it is here for when a README grows
+back over 100k, which has happened twice before.
+
+Also worth not re-discovering: GET /v2/acts/{id} carries NO `readme` field at
+all -- the key is absent, not empty. Only the build record has it.
+
+Exit 1 = any Actor's live README differs from local (i.e. an unpushed edit).
+Exit 0 = every Actor matches, or is TRUNCATED-but-verified via /versions.
+Skips (no local README, no `latest` tagged build, build carries no readme)
+are printed and are NOT failures -- a never-published Actor dir is normal.
+
+--verbose prints every Actor, matched or not.
+"""
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+
+ACTORS = "/root/agent/actors"
+ENV = "/root/agent/secrets/env"
+TRUNCATION_CLIFF = 100000
+VERBOSE = "--verbose" in sys.argv
+
+
+def apify_token():
+    tok = os.environ.get("APIFY_TOKEN")
+    if tok:
+        return tok
+    with open(ENV, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if line.startswith("APIFY_TOKEN="):
+                return line.split("=", 1)[1].strip().strip("'\"")
+    sys.exit("APIFY_TOKEN not found in environment or " + ENV)
+
+
+def api(path, token):
+    req = urllib.request.Request(
+        "https://api.apify.com/v2" + path,
+        headers={"Authorization": "Bearer " + token},
+    )
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return json.load(r)["data"]
+
+
+def local_readme(slug):
+    path = os.path.join(ACTORS, slug, "README.md")
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+def versions_readme(act_id, token):
+    """Full untruncated README from the versions route (the >100k fallback)."""
+    data = api("/acts/%s/versions" % act_id, token)
+    items = data.get("items") or []
+    if not items:
+        return None
+    for f in items[0].get("sourceFiles") or []:
+        if f.get("name") == "README.md":
+            return f.get("content")
+    return None
+
+
+def main():
+    token = apify_token()
+    acts = api("/acts?limit=200&my=1", token)["items"]
+    flags, skips, truncated, matched = [], [], [], 0
+
+    for act in sorted(acts, key=lambda a: a["name"]):
+        slug = act["name"]
+        loc = local_readme(slug)
+        if loc is None:
+            skips.append((slug, "no local README.md"))
+            continue
+        try:
+            full = api("/acts/" + act["id"], token)
+            tagged = full.get("taggedBuilds") or {}
+            if "latest" not in tagged:
+                skips.append((slug, "no `latest` tagged build"))
+                continue
+            build = api("/actor-builds/" + tagged["latest"]["buildId"], token)
+        except urllib.error.HTTPError as exc:
+            skips.append((slug, "API %s" % exc.code))
+            continue
+        live = (build.get("actorDefinition") or {}).get("readme")
+        build_no = build.get("buildNumber")
+        if live is None:
+            skips.append((slug, "build %s carries no readme" % build_no))
+            continue
+
+        if live == loc:
+            matched += 1
+            if VERBOSE:
+                print("  ok        %-38s %6d chars  build %s"
+                      % (slug, len(loc), build_no))
+            continue
+
+        # Short read: truncation, or an unpushed edit? The rule is exact.
+        if len(live) == TRUNCATION_CLIFF and loc.startswith(live):
+            real = versions_readme(act["id"], token)
+            if real == loc:
+                truncated.append((slug, len(loc), build_no))
+                if VERBOSE:
+                    print("  TRUNCATED %-38s %6d chars  build %s "
+                          "(verified via /versions)" % (slug, len(loc), build_no))
+                continue
+            flags.append((slug, len(loc), len(real) if real is not None else -1,
+                          build_no, "over the 100k cliff AND /versions disagrees"))
+            continue
+
+        flags.append((slug, len(loc), len(live), build_no,
+                      "live is %+d chars vs local, not a 100k-prefix -> UNPUSHED"
+                      % (len(live) - len(loc))))
+
+    print("check-readme-pushed: %d Actor(s) checked, %d identical, "
+          "%d truncated-but-verified, %d skipped, %d FLAGGED"
+          % (len(acts), matched, len(truncated), len(skips), len(flags)))
+    for slug, why in skips:
+        print("  skip      %-38s %s" % (slug, why))
+    for slug, n, build_no in truncated:
+        print("  TRUNCATED %-38s %6d chars  build %s  (ok via /versions)"
+              % (slug, n, build_no))
+    for slug, nloc, nlive, build_no, why in flags:
+        print("  UNPUSHED  %-38s local %d / live %d  build %s  -- %s"
+              % (slug, nloc, nlive, build_no, why))
+    if flags:
+        print("\n%d Actor(s) have README edits that were never deployed. "
+              "A git commit is not a deploy: run `apify push --force -w 600` "
+              "in each Actor dir (~$0.0048 of build each), then re-run this."
+              % len(flags))
+        return 1
+    print("\nEvery live Store README matches local. Nothing to push.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

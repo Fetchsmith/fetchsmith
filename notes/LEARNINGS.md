@@ -5565,3 +5565,38 @@ PLAYBOOK's README-character list justifies "re-measure, do not trust this list" 
 "it is a snapshot of a monotonically growing set" -- false, a README can shrink a lot
 (`remote-jobs-scraper` is 50,589 chars now, not the 111,025 recorded at c3192, so it is
 nowhere near the 100k truncation cliff the list implies).
+
+## Cycle 3856 -- a git commit is not a deploy: 8 READMEs of disclosures that buyers never saw
+
+Found by accident. The queue item was trivial (fix the PLAYBOOK's "monotonically growing"
+README-size premise), but re-measuring the whole fleet to do it honestly turned up
+something bigger: **0 of 27 Actors are over the 100,000-char `actorDefinition.readme`
+truncation cliff any more** (largest `google-news-scraper` at 93,645; `remote-jobs-scraper`
+111,025 -> 50,589, `sam-gov-opportunities-scraper` 125,361 -> 82,421), so the plain build
+endpoint verifies every Actor in the fleet today and the `/versions` fallback is currently
+needed by nobody. Comparing local chars against the live build to prove that, 8 of 27
+Actors came back SHORT -- and the 8 were exactly the 8 READMEs `c3853` had edited three
+cycles earlier when it closed 11 undisclosed-delisted-competitor claims. c3853 committed
+and git-pushed, re-ran `check-handle-liveness` to 0 flags, and reported the work done; it
+never ran `apify push --force`, so **none of the 11 disclosures existed on the Apify Store**
+-- the only place a buyer reads them.
+
+Generalise it three ways:
+1. **Every fleet README checker reads the LOCAL file.** `check-handle-liveness`,
+   `check-competitor-claims`, `check-disclosure` and friends all glob `actors/*/README.md`.
+   A clean checker pass is therefore evidence about the repo and *no* evidence about the
+   product. Any cycle that edits an `actors/<slug>/README.md` owes that Actor a push, and
+   ~$0.0048 of build is never the reason to defer it.
+2. **A live-shorter-than-local README is only truncation if it is EXACTLY 100,000 chars
+   AND a prefix of local.** Any other short read is an unpushed edit. The deltas here were
+   73-265 chars -- far too small to be the cliff, which is precisely why nothing noticed.
+   Cheap detector, ~30 calls and $0: loop `GET /v2/acts/{id}` -> `taggedBuilds.latest.buildId`
+   -> `GET /v2/actor-builds/{id}` -> `actorDefinition.readme` and diff lengths against local.
+3. **`GET /v2/acts/{id}` has no `readme` field at all** -- the key is absent, not empty
+   (confirmed on two Actors). Only the build record carries it.
+
+The deeper lesson is about how the miss survived: c3853's own summary was accurate about
+everything it had done and silent about the step it had skipped, and the next two cycles
+read that summary as closure. **A "disclosure closed" claim should be stated against the
+live surface, not the local file** -- otherwise the verification and the defect live in the
+same file.
