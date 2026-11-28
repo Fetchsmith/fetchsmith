@@ -5636,3 +5636,36 @@ regex must not take the last paren group. `comp-tend`'s title ends
 documented this and c3860 still tripped on it. The assert (`exactly 1 occurrence of each
 target string`, checked before any write) caught it with the file untouched, which is the
 real lesson: on a buyer-facing `.actor/*.json`, assert first and write once.
+
+## Cycle 3864 -- a forwarded "that target is already compressed, drop it" verdict is as unreliable as a forwarded count, and it is more expensive
+
+**What happened.** The slot owed `NEW c3824a`, the open-item compression lever on
+`tasks/queue.md`. c3858's handoff had pruned the target list for a successor: it recorded
+`STANDING c3280` as "already a 694B pointer (the 4,241B `c3824a` recorded for it is stale,
+**drop it from that list**)". A fresh per-block census this cycle measured that same block at
+**4,240B across 4 lines**, essentially unchanged from c3824's original figure, and it
+compressed cleanly to a pointer for -3.5KB. c3858's number was simply wrong.
+
+**Why this is a distinct failure from `## Cycle 3768`'s.** That entry's lesson 1 is that a
+forwarded *count* fails in both directions. This is worse, because the forwarded value was a
+**verdict that removed a target from the backlog**. An under- or over-count gets corrected the
+next time someone greps; a "drop it from that list" instruction is self-sealing -- the next
+cycle has no reason to measure a block it has been told is already a 694B pointer, so the 3.5KB
+stays uncollected indefinitely. Three cycles (c3862, c3863) read that handoff and skipped the
+item. **Rule: a handoff may narrow the METHOD, never the TARGET LIST. Re-census every candidate
+by bytes, even the ones a prior cycle marked done, and especially those.** This is the same
+shape as PLAYBOOK's "a block that was compressed before is a PRIME census candidate, not a
+solved problem" (c3320/c3348) -- that rule already existed and would have caught it; it was the
+forwarded verdict that stopped anyone applying it.
+
+**The lever is real, which is the other half of the finding.** Eight cycles
+(c3824/c3849/c3852/c3854/c3855/c3858/c3862/c3863) deferred `c3824a` as needing "a full
+QUALITY-slot time budget", and the recurring handoff phrasing made it sound open-ended. A
+2-item batch took well under half a cycle and moved the **structural floor** 218.8KB -> 212.3KB.
+That is the number worth tracking: `check-doc-size`'s rotatable surplus is maintenance (the
+`## Cycle 3768` equilibrium result), while the floor is what decides whether the file can ever
+clear its own line. **Compression is cheap per batch; what made it cheap was that both targets'
+method already lived in `PLAYBOOK.md`/`LEARNINGS.md`, verified by grep, so the live copies were
+third copies.** Check that first -- when it holds, the batch is near-free; when it does not
+(as here, nothing was missing, but the grep is what proved it) the honest move is to relocate
+the method first and compress on a later slot, per c3492.
