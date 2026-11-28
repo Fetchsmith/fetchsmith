@@ -1,62 +1,21 @@
 {
  "_why": "Last check-handle-liveness sweep. UNDISCLOSED is the work queue: each mention needs the standard inline delisted note + a past-tensed claim, one Actor (one build) at a time.",
- "swept": "2026-11-21",
+ "swept": "2026-11-28",
  "partial_only": [],
- "handles": 3164,
- "live": 3017,
- "delisted": 147,
- "undisclosed": [
-  {
-   "file": "actors/nih-reporter-scraper/README.md",
-   "line": 220,
-   "handle": "grandiose_envelope_0fj/clinical-trials-leads-scraper"
-  },
-  {
-   "file": "actors/nih-reporter-scraper/README.md",
-   "line": 220,
-   "handle": "grandiose_envelope_0fj/nih-grant-winners-leads-scraper"
-  },
-  {
-   "file": "actors/nih-reporter-scraper/README.md",
-   "line": 222,
-   "handle": "grandiose_envelope_0fj/clinical-trials-leads-scraper"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 337,
-   "handle": "factline/us-company-lookup-sec"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 410,
-   "handle": "tagadanar/usaspending-federal-awards"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 164,
-   "handle": "logiover/tripadvisor-scraper"
-  },
-  {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 144,
-   "handle": "meridianlabs/eu-uk-tenders-scraper"
-  },
-  {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 164,
-   "handle": "civitab/uk-tenders-ocds"
-  },
-  {
-   "file": "actors/us-federal-awards-scraper/README.md",
-   "line": 225,
-   "handle": "logiover/usaspending-gov-scraper"
-  }
- ],
+ "handles": 2508,
+ "live": 2384,
+ "delisted": 124,
+ "undisclosed": [],
  "shared": [
   {
    "file": "actors/apple-podcasts-scraper/README.md",
    "line": 212,
    "handle": "neuro-scraper/itunes-podcast-host-phone-number-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 218,
+   "handle": "v0iddo/itunes-podcast-search"
   },
   {
    "file": "actors/apple-podcasts-scraper/README.md",
@@ -95,7 +54,7 @@
   },
   {
    "file": "actors/apple-podcasts-scraper/README.md",
-   "line": 234,
+   "line": 236,
    "handle": "yiafirm/podcast-monitor"
   },
   {
@@ -135,13 +94,13 @@
   },
   {
    "file": "actors/eu-ted-tenders-scraper/README.md",
-   "line": 170,
-   "handle": "studio-amba/boamp-scraper"
+   "line": 146,
+   "handle": "vhsgreed/eu-ted-tenders-api-fresh"
   },
   {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 289,
-   "handle": "studio-amba/safety-gate-scraper"
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 170,
+   "handle": "studio-amba/boamp-scraper"
   },
   {
    "file": "actors/google-news-scraper/README.md",
@@ -160,43 +119,33 @@
   },
   {
    "file": "actors/google-play-reviews-scraper/README.md",
+   "line": 104,
+   "handle": "scrapebench/reviews-insight-mcp"
+  },
+  {
+   "file": "actors/google-play-reviews-scraper/README.md",
    "line": 124,
    "handle": "rbbscrap/fast-google-play-scraper"
   },
   {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 168,
-   "handle": "crawlerbros/hacker-news-scraper"
+   "file": "actors/grants-gov-scraper/README.md",
+   "line": 216,
+   "handle": "owlabee/gov-opportunity-feed"
   },
   {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 168,
-   "handle": "rbbscrap/fast-hacker-news-scraper"
+   "file": "actors/grants-gov-scraper/README.md",
+   "line": 216,
+   "handle": "tagadanar/us-grants-monitor"
   },
   {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 188,
-   "handle": "fluyeporlaweb/hacker-news-scraper"
+   "file": "actors/grants-gov-scraper/README.md",
+   "line": 216,
+   "handle": "vhsgreed/us-federal-contracts"
   },
   {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 210,
-   "handle": "fluyeporlaweb/hacker-news-scraper"
-  },
-  {
-   "file": "actors/remote-jobs-scraper/README.md",
-   "line": 209,
-   "handle": "antishock/remoteok-jobs-scraper"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 281,
-   "handle": "magicfingers/sam-gov-scraper"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 292,
-   "handle": "magicfingers/sam-gov-scraper"
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 145,
+   "handle": "scrapebench/shopify-change-tracker"
   },
   {
    "file": "actors/steam-reviews-scraper/README.md",
@@ -210,18 +159,13 @@
   },
   {
    "file": "actors/trademark-search-scraper/README.md",
-   "line": 244,
-   "handle": "parseforge/ziprecruiter-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 659,
+   "line": 220,
    "handle": "owner/slug"
   },
   {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 134,
-   "handle": "rein8/public-tenders-uk-eu"
+   "file": "actors/us-federal-awards-scraper/README.md",
+   "line": 243,
+   "handle": "vhsgreed/us-federal-contracts"
   },
   {
    "file": "actors/us-federal-awards-scraper/README.md",
@@ -237,22 +181,22 @@
   },
   {
    "file": "actors/app-store-reviews-scraper/README.md",
-   "line": 281,
+   "line": 282,
    "handle": "luminar/app-store-reviews-change-monitor"
   },
   {
    "file": "actors/app-store-reviews-scraper/README.md",
-   "line": 320,
+   "line": 321,
    "handle": "axiomworks/review-firehose"
   },
   {
    "file": "actors/app-store-reviews-scraper/README.md",
-   "line": 381,
+   "line": 382,
    "handle": "tinyrex/app-store-reviews-scraper"
   },
   {
    "file": "actors/app-store-reviews-scraper/README.md",
-   "line": 492,
+   "line": 493,
    "handle": "gh0st1k/app-store-reviews-scraper"
   },
   {
@@ -312,13 +256,28 @@
   },
   {
    "file": "actors/apple-podcasts-scraper/README.md",
-   "line": 234,
+   "line": 232,
+   "handle": "beakdo/podcast-b2b-outreach-intel"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 236,
    "handle": "wearefluent/podcast-episodes-scraper"
   },
   {
    "file": "actors/clinicaltrials-scraper/README.md",
    "line": 151,
    "handle": "bovi/clinicaltrials-scraper"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 155,
+   "handle": "constant_quadruped/clinical-trials-fda-scraper"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 157,
+   "handle": "constant_quadruped/clinical-trials-fda-scraper"
   },
   {
    "file": "actors/clinicaltrials-scraper/README.md",
@@ -342,8 +301,18 @@
   },
   {
    "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 182,
+   "handle": "v0iddo/clinicaltrials-updates-tracker"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
    "line": 184,
    "handle": "seaf999ield/biotech-catalyst-tracker"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 188,
+   "handle": "captainhandsome/courtlistener-case-search"
   },
   {
    "file": "actors/court-records-scraper/README.md",
@@ -421,34 +390,9 @@
    "handle": "automation-lab/tenderned-netherlands-tenders-scraper"
   },
   {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 279,
-   "handle": "tagadanar/openfda-recall-monitor"
-  },
-  {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 287,
-   "handle": "crawlerbros/autotrader-us-vehicle-catalog"
-  },
-  {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 289,
-   "handle": "studio-amba/boamp-scraper"
-  },
-  {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 291,
-   "handle": "studio-amba/safety-gate-scraper"
-  },
-  {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 293,
-   "handle": "rbbscrap/fast-openfda-scraper"
-  },
-  {
-   "file": "actors/fda-recall-scraper/README.md",
-   "line": 303,
-   "handle": "rbbscrap/fast-openfda-scraper"
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 172,
+   "handle": "vhsgreed/eu-ted-tenders-api-fresh"
   },
   {
    "file": "actors/fec-campaign-finance-scraper/README.md",
@@ -531,6 +475,11 @@
    "handle": "ilborso/ai-news-content-crawler"
   },
   {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 146,
+   "handle": "groupoject/google-news-scraper"
+  },
+  {
    "file": "actors/google-play-reviews-scraper/README.md",
    "line": 104,
    "handle": "crawlerbros/google-playstore-scraper"
@@ -539,21 +488,6 @@
    "file": "actors/google-play-reviews-scraper/README.md",
    "line": 108,
    "handle": "zenomastro/google-play-reviews-reliable"
-  },
-  {
-   "file": "actors/grants-gov-scraper/README.md",
-   "line": 216,
-   "handle": "tagadanar/us-grants-monitor"
-  },
-  {
-   "file": "actors/grants-gov-scraper/README.md",
-   "line": 232,
-   "handle": "owlabee/gov-opportunity-feed"
-  },
-  {
-   "file": "actors/grants-gov-scraper/README.md",
-   "line": 242,
-   "handle": "tagadanar/us-grants-monitor"
   },
   {
    "file": "actors/hacker-news-scraper/README.md",
@@ -566,148 +500,48 @@
    "handle": "crawlerbros/hackernews-scraper"
   },
   {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 151,
-   "handle": "bovi/hacker-news-scraper"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 151,
-   "handle": "luminar/hackernews-scraper-monitor"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 153,
-   "handle": "darknezz/sentiment-analyzer"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 159,
-   "handle": "carmine_tennis/hn-who-is-hiring-scraper"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 168,
-   "handle": "fit_melon/hacker-news-search-scraper"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 183,
-   "handle": "fit_melon/hacker-news-search-scraper"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 189,
-   "handle": "wearefluent/hn-search"
-  },
-  {
    "file": "actors/nih-reporter-scraper/README.md",
-   "line": 202,
+   "line": 204,
    "handle": "crawlerbros/icite-scraper"
   },
   {
    "file": "actors/nih-reporter-scraper/README.md",
-   "line": 202,
+   "line": 204,
    "handle": "crawlerbros/nih-reporter-grants-scraper"
   },
   {
    "file": "actors/nih-reporter-scraper/README.md",
-   "line": 202,
+   "line": 204,
    "handle": "crawlerbros/nih-reporter-scraper"
   },
   {
    "file": "actors/nih-reporter-scraper/README.md",
-   "line": 202,
+   "line": 204,
    "handle": "tagadanar/us-grants-monitor"
   },
   {
    "file": "actors/nih-reporter-scraper/README.md",
-   "line": 210,
+   "line": 212,
    "handle": "tagadanar/us-grants-monitor"
   },
   {
-   "file": "actors/remote-jobs-scraper/README.md",
-   "line": 163,
-   "handle": "automation-lab/omni-jobs-board-scraper"
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 222,
+   "handle": "grandiose_envelope_0fj/clinical-trials-leads-scraper"
   },
   {
-   "file": "actors/remote-jobs-scraper/README.md",
-   "line": 167,
-   "handle": "automation-lab/remote-jobs-multi-board-feed"
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 222,
+   "handle": "grandiose_envelope_0fj/nih-grant-winners-leads-scraper"
   },
   {
-   "file": "actors/remote-jobs-scraper/README.md",
-   "line": 171,
-   "handle": "automation-lab/working-nomads-jobs-scraper"
-  },
-  {
-   "file": "actors/remote-jobs-scraper/README.md",
-   "line": 211,
-   "handle": "datagleaner/remote-jobs-scraper"
-  },
-  {
-   "file": "actors/remote-jobs-scraper/README.md",
-   "line": 229,
-   "handle": "m_ctim/remoteok-job-scraper"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 281,
-   "handle": "scrapebench/samgov-opportunity-alert"
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 224,
+   "handle": "grandiose_envelope_0fj/clinical-trials-leads-scraper"
   },
   {
    "file": "actors/sam-gov-opportunities-scraper/README.md",
    "line": 290,
-   "handle": "kantolabs/sam-gov-contract-opportunities"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 297,
-   "handle": "leadharbor/sam-gov-vendor-screening"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 299,
-   "handle": "aicatraz/gov-rfp-aggregator-mcp"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 314,
-   "handle": "tagadanar/usaspending-federal-awards"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 321,
-   "handle": "tagadanar/us-grants-monitor"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 321,
-   "handle": "tagadanar/usaspending-federal-awards"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 325,
-   "handle": "owlabee/gov-opportunity-feed"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 329,
-   "handle": "owlabee/gov-opportunity-feed"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 335,
-   "handle": "tagadanar/usaspending-federal-awards"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 358,
-   "handle": "barefoot_grade/sam-gov-opportunities-scraper"
-  },
-  {
-   "file": "actors/sam-gov-opportunities-scraper/README.md",
-   "line": 364,
    "handle": "tagadanar/usaspending-federal-awards"
   },
   {
@@ -742,33 +576,48 @@
   },
   {
    "file": "actors/sec-insider-trades-scraper/README.md",
-   "line": 389,
+   "line": 392,
    "handle": "rbbscrap/fast-sec-edgar-scraper"
   },
   {
    "file": "actors/shopify-products-scraper/README.md",
-   "line": 132,
+   "line": 113,
+   "handle": "scrapebench/shopify-change-tracker"
+  },
+  {
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 137,
    "handle": "crawlerbros/shopify-scraper"
   },
   {
    "file": "actors/shopify-products-scraper/README.md",
-   "line": 134,
+   "line": 139,
    "handle": "crawlerbros/shopify-scraper"
   },
   {
    "file": "actors/shopify-products-scraper/README.md",
-   "line": 134,
+   "line": 139,
    "handle": "crawlerbros/shopify-scraper-pro"
   },
   {
    "file": "actors/shopify-products-scraper/README.md",
-   "line": 138,
+   "line": 143,
    "handle": "luminar/shopify-products-price-stock-monitor"
+  },
+  {
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 160,
+   "handle": "thescrapelab/shopify-store-opportunity-intelligence"
   },
   {
    "file": "actors/steam-reviews-scraper/README.md",
    "line": 232,
    "handle": "crawlerbros/steam-review-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 234,
+   "handle": "benthepythondev/steam-reviews-scraper"
   },
   {
    "file": "actors/steam-reviews-scraper/README.md",
@@ -794,6 +643,11 @@
    "file": "actors/steam-reviews-scraper/README.md",
    "line": 270,
    "handle": "wearefluent/steam-reviews-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 284,
+   "handle": "serpdownloaders/clientclub-downloader"
   },
   {
    "file": "actors/substack-scraper/README.md",
@@ -827,72 +681,7 @@
   },
   {
    "file": "actors/trademark-search-scraper/README.md",
-   "line": 145,
-   "handle": "luminar/uspto-trademark-monitor"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 149,
-   "handle": "crawlerbros/uspto-trademark-search-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 151,
-   "handle": "maged120/brand-username-checker"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 153,
-   "handle": "crawlerbros/euipo-trademark-design-search-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 170,
-   "handle": "crawlerbros/importyeti-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 228,
-   "handle": "crawlerbros/importyeti-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 233,
-   "handle": "parseforge/ziprecruiter-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 417,
-   "handle": "maged120/brand-username-checker"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 436,
-   "handle": "rbbscrap/fast-uspto-trademark-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 474,
-   "handle": "rbbscrap/fast-uspto-trademark-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 515,
-   "handle": "barefoot_grade/uspto-trademarks-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 526,
-   "handle": "crawlerbros/importyeti-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 549,
-   "handle": "crawlerbros/importyeti-scraper"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 659,
+   "line": 220,
    "handle": "crawlerbros/importyeti-scraper"
   },
   {
@@ -902,38 +691,23 @@
   },
   {
    "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 136,
+   "line": 134,
+   "handle": "rein8/public-tenders-uk-eu"
+  },
+  {
+   "file": "actors/uk-find-a-tender-scraper/README.md",
+   "line": 139,
    "handle": "crawlerbros/uk-contracts-finder-scraper"
   },
   {
    "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 140,
-   "handle": "signalrows/tenders-uk-contracts-finder"
-  },
-  {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 142,
-   "handle": "aicatraz/gov-rfp-aggregator-mcp"
-  },
-  {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 150,
+   "line": 148,
    "handle": "friedl/uk-public-tenders"
   },
   {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 152,
-   "handle": "friedl/uk-public-tenders"
-  },
-  {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 158,
-   "handle": "unhampered_dolly/us-federal-contracts-finder"
-  },
-  {
-   "file": "actors/uk-find-a-tender-scraper/README.md",
-   "line": 160,
-   "handle": "fit_melon/new-french-public-contracts-finder-decp"
+   "file": "actors/us-federal-awards-scraper/README.md",
+   "line": 225,
+   "handle": "logiover/usaspending-gov-scraper"
   },
   {
    "file": "actors/us-federal-awards-scraper/README.md",
@@ -954,6 +728,11 @@
    "file": "actors/us-federal-awards-scraper/README.md",
    "line": 247,
    "handle": "crawlerbros/usaspending-scraper"
+  },
+  {
+   "file": "actors/website-screenshot-scraper/README.md",
+   "line": 324,
+   "handle": "northledgertools/website-screenshot"
   }
  ],
  "url_like_404": [
@@ -963,6 +742,7 @@
   "media.blubrry.com/...",
   "okgov.wd1.myworkdayjobs.com/okgovjobs",
   "ottonova.jobs.personio.de/xml",
+  "pwc.wd3.myworkdayjobs.com/Global_Experienced_Careers",
   "weworkremotely.com/remote-jobs.rss"
  ],
  "anomalies": []

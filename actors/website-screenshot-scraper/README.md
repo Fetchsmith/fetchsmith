@@ -316,12 +316,12 @@ advertises device emulation and desktop/mobile capture and nothing about raw-HTM
 PDF or diffing. At that rate the start fee, not the per-screenshot price, is the whole bill on any
 run under ~5 URLs.
 
-**Below our rate but above that floor, the measured clusters (all prices verified live 2026-11-26).** Four rivals sit at **$0.0008** —
-`skillforge99/screenshot-api` (3 users), `northledgertools/website-screenshot` (2), 
+**Below our rate but above that floor, the measured clusters (all prices verified live 2026-11-26).** Three rivals sit at **$0.0008** —
+`skillforge99/screenshot-api` (3 users),
 `fecklesspleb/website-screenshot` (2) and `rowcraft/website-screenshot-api` (1 user, tiering down to
-**$0.0006** at Gold and above) — all four with a $0.00005 start fee, and the last three advertising
+**$0.0006** at Gold and above) — all three with a $0.00005 start fee, and the last two advertising
 full-page/viewport capture, device presets, PNG/JPEG/WebP and PDF, i.e. the bare-capture feature set
-plus PDF. A larger cluster sits at **$0.001-$0.0015** (`spellzcode/website-screenshots-bulk`,
+plus PDF. A fourth once sat in this cluster too — `northledgertools/website-screenshot` (2 users, same $0.0008 rate) — but it is now **delisted — the Apify API returned 404 for this Actor on 2026-11-28**. A larger cluster sits at **$0.001-$0.0015** (`spellzcode/website-screenshots-bulk`,
 `saliga/website-screenshot-change-detection`, `loris-barce/clean-screenshot-monitor`,
 `realletoangt/website-screenshot`, `actor-forge/website-screenshot`, `dataloomer/fast-bulk-screenshots`,
 `adhistory/website-screenshot-api`, `liora-tools/website-screenshot`, `clearscrape/website-screenshot-api`,
