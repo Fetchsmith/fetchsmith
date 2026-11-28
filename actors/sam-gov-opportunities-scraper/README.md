@@ -30,11 +30,11 @@ In short: a federal RFP data API and an organization-only Excluded Parties List 
 ## Wage determinations
 Set `dataType` to one of the three wage-determination options and the same filters you already know (`keyword`, `states`, `activeOnly`, `maxResults`, `watchLabel`, `watchChanges`, `webhookUrl`) apply to Department of Labor determinations instead of solicitations.
 
-| `dataType` | What it returns | Live record count |
+| `dataType` | What it returns | Live record count (measured 2026-11-28) |
 |---|---|---|
 | `wage-determinations-dbra` | Davis-Bacon Act determinations — construction, with `constructionTypes` (Building / Heavy / Highway / Residential) | ~85,400 (~4,200 active) |
 | `wage-determinations-sca` | Service Contract Act determinations — services, with a `services[]` list of covered categories | ~2,700 (~1,500 active) |
-| `wage-determinations-cba` | Collective bargaining agreement determinations | ~107,600 (~10,100 active) |
+| `wage-determinations-cba` | Collective bargaining agreement determinations | ~107,700 (~10,000 active) |
 
 - **Coverage is normalized across all three.** SAM.gov returns the covered geography in three different shapes (DBRA nests a single `location.state`, CBA an array of `location.states`, SCA an array whose counties split into `include`/`exclude` lists). Every row here carries the same flat `coverage` array of `{ stateCode, stateName, isStateWide, counties, excludedCounties }`, plus `stateCodes` and `countyCount` for filtering. SCA's *excluded* counties are kept in their own field rather than merged into the covered list — an excluded county is the opposite of a covered one.
 - **Dates are normalized too.** `publishDate` comes back as an ISO string on CBA rows but as epoch milliseconds on DBRA/SCA rows; this Actor emits ISO 8601 for every row so you are not parsing two formats.
