@@ -7475,3 +7475,33 @@ rather than over-reports. Fixing it needs per-file line attribution in the flag 
 why c3836 filed it instead of doing it. A term-match artifact also worth remembering: two listings
 entered this niche's sweep purely through the boilerplate sentence "All trademarks mentioned are the
 property of their respective owners" in their Store descriptions.
+
+
+## cycle 3840 -- a "genuinely new rivals" count needs TWO independent baselines, and the priced-cohort union is not one of them
+
+Closed `NEW c3836b` by re-running the c3836-fixed `bin/niche-unnamed` on the other 7 relocated
+Actors, and the re-screen found a **false claim already live** on `uk-find-a-tender-scraper`'s Store
+page, not just inflated inputs. Corrected unnamed counts (2026-11-28, all with COMPETITORS.md now in
+the disclosure surface): uk-find-a-tender 49 of 149 matched (44 NONE / 5 OWNER, was recorded 111-115);
+sam-gov-opportunities 81 of 157 (72/9, was 235 of 351); grants-gov 68 of 139 (64/4); hacker-news 141
+of 216 (116/25); fda-recall 234 of 336 (176/58); remote-jobs 271 of 428 (177/94); ats-jobs 519 of 616
+(419/100). CAVEAT on every before/after pair here: matched counts also fell fleet-wide from the
+confirmed 2026-11-27 Store search-index step change (LEARNINGS "c3820"), so the drop is part
+disclosure-fix and part index shrinkage and must not be attributed wholly to either.
+
+**The reusable lesson is about the audit method, not the tool.** c3835 did not price its whole 111-handle
+pool; it diffed that pool against the union of four prior PRICED cohorts (c2821/c3157/c3494/c3651, 288
+handles) and called the 32 survivors "genuinely new". That union is not a disclosure baseline -- this
+page has recorded more sweeps than those four, so a rival already named AND crossover-priced in an
+earlier `COMPETITORS.md` paragraph falls outside it and reads as new. Checked handle by handle at
+c3840: of the 20 rival handles c3835 named, **17 were already named and priced here**, and only 3 were
+genuinely new (`crawlwren/uk-eu-tenders`, `powerfully_goliath/uk-government-contracts`,
+`rowfeed/eu-tenders-scraper`). The two faults compounded in the same direction -- an inflated pool fed
+a diff that could not filter it -- which is how "the largest single new-undercutter batch this Actor
+has seen" (20) got published for what was a routine 3. **Rule going forward: before writing any
+"N genuinely new" sentence, grep the candidate handles against the Actor's whole disclosure surface
+(README.md AND COMPETITORS.md, parity-safely, per c3836), not against the priced-cohort union.** A
+priced-cohort diff is a fine way to decide what to re-price cheaply; it is not evidence of novelty.
+Shipped as a dated in-paragraph CORRECTION (build 0.1.121, live README byte-identical at 73,776
+chars) rather than a deletion -- the HOLD pricing decision was unaffected, since a smaller real
+undercutter cohort only strengthens a hold.
