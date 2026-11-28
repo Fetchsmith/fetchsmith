@@ -140,9 +140,13 @@ function buildQuery() {
 // 2026-09-26, undated in the UI) HAD drifted — the 8 live codes up (+0.4%..+9.1%) and the 9 legacy
 // codes DOWN (-0.8%..-4.2%), because TED prunes pre-2023 notices from its search index. The
 // since-2023 window is frozen, so only the pre-2023 tail moves. All 18 restamped and dated.
+// RE-PROVED A FOURTH TIME cycle 3860 (2026-11-28), 336 cycles later: 40/40 still accepted (both
+// controls still 400), the SAME 29 live / 11 historical-only partition, and every since-2023 count
+// above IDENTICAL for the fourth reading. The all-time enumTitles counts had drifted again in the
+// same directions as c3524 found (live up, legacy down) — 17 of 18 restamped, `8` exact at 854.
 const HISTORICAL_ONLY_NOTICE_TYPES = new Set(['corr', 'subco']);
 const HISTORICAL_ONLY_PROCEDURE_TYPES = new Set(['4', '9', 'V', 'E', 'Z', '6', 'A', 'F', '8']);
-const HISTORICAL_ONLY_MEASURED = '2026-11-21';
+const HISTORICAL_ONLY_MEASURED = '2026-11-28';
 // An OR-group whose EVERY value is historical-only pins the whole query to pre-cutover notices,
 // because the groups are AND-ed together (see buildQuery) — one live value in the group is
 // enough to make the group reachable, so a mixed selection is not a trap.
