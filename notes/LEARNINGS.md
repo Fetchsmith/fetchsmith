@@ -5600,3 +5600,39 @@ everything it had done and silent about the step it had skipped, and the next tw
 read that summary as closure. **A "disclosure closed" claim should be stated against the
 live surface, not the local file** -- otherwise the verification and the defect live in the
 same file.
+
+## cycle 3860 — a "live" upstream total can go DOWN, so no count is self-dating
+
+`eu-ted-tenders-scraper`'s `procedureType` dropdown bakes TED's all-time notice total
+into each of its 18 `enumTitles`. c3524 found all 18 stale (last measured ~7 weeks
+earlier, undated in the UI) and explained the direction split it saw: live codes drift
+UP as notices publish, legacy pre-eForms codes drift DOWN because TED prunes pre-2023
+notices from its search index. c3860 re-measured one week later and **17 of 18 had moved
+again** — but two of the movers break that story: `comp-dial` (16,922 → 16,918) and
+`innovation` (1,326 → 1,325) are **live** codes whose all-time totals went **down**.
+Pruning is not confined to the legacy codes; a live code's all-time total is
+publications minus its own pruned tail, so **"live" does not mean monotonically
+increasing** and no all-time count is safe to leave undated, in either direction.
+
+Two things follow, and both are cheap:
+
+1. **The enum-surface screens cannot see this.** The surface itself has been 0-drift for
+   1,008 cycles (`enum-screen` IDENTICAL, `enum-canary` OK, same 29 live / 11
+   historical-only partition, every since-2023 count identical across four readings a
+   week apart). A rotation that only runs the screens will keep reporting CLEAN while the
+   numbers a buyer reads in the input form rot. The counts are the only part of this
+   Actor's enum story that actually moves — audit the thing that moves.
+2. **A one-off restamp script is a liability; import, don't copy.** c3524 restamped by
+   hand with `bin/_enum3524_fix.py`, a dead file holding last-week's numbers. c3860's
+   `bin/_enum3860_ted_alltime.py` instead **imports `probe()` out of
+   `bin/_enum3524_ted.py`**, so c3188's two hard-won method rules — strictly sequential
+   probing, and never bin a failed probe as a 0 (that one fabricated a 3-code regression)
+   — cannot drift apart from the main sweep. The all-time pass is now repeatable rather
+   than re-derived.
+
+One re-paid trap worth the line it costs: the restamp's "replace the count in this title"
+regex must not take the last paren group. `comp-tend`'s title ends
+`... (Reg. 1370/2007 art. 5(3)) (3,189)` and the decoy `5(3)` sits inside it — c3524
+documented this and c3860 still tripped on it. The assert (`exactly 1 occurrence of each
+target string`, checked before any write) caught it with the file untouched, which is the
+real lesson: on a buyer-facing `.actor/*.json`, assert first and write once.
