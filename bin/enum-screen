@@ -70,6 +70,14 @@ def anchor(c):
 
 d=json.load(open(R+"/state/audit_dates.json")); actors=d.get("actors",d)
 AUDIT=(sys.argv[1] if len(sys.argv)>1 else "enum_audit")
+types=sorted({k for v in actors.values() if isinstance(v,dict) for k,val in v.items() if isinstance(val,int)})
+if AUDIT not in types:
+    if os.path.isdir("%s/actors/%s"%(R,AUDIT)):
+        print("%r is an Actor slug; this tool takes an audit TYPE -- run it bare to screen all Actors for enum_audit"%AUDIT)
+    else:
+        print("unknown audit type: %r"%AUDIT)
+    print("available: %s"%", ".join(types))
+    sys.exit(2)
 due=sorted(k for k,v in actors.items()
            if isinstance(v,dict) and isinstance(v.get(AUDIT),int)
            and os.path.exists("%s/actors/%s/.actor/input_schema.json"%(R,k)))
@@ -93,3 +101,4 @@ for a in due:
             chg.append("  ~ %s added=%s removed=%s"%(k,add,rem))
     print("== %-32s last=%-5d base=%s | enum fields %d->%d | %s"%(a,last,rd[:16],len(old),len(new),"CHANGED" if chg else "IDENTICAL"))
     for c in chg: print(c[:220])
+print("%d Actor(s) checked for %r"%(len(due),AUDIT))
