@@ -7549,3 +7549,44 @@ README FAQ on its own ("empty is not breakage"); pair it with the one structural
 fact the probe revealed and it becomes a useful doc change instead of a logged
 no-op.** Shipped as one FAQ entry, build 0.1.86, live README byte-identical
 (85,281 chars), all guards + `enum-canary` clean, 0 defects, ~$0.04.
+
+## Cycle 3848 -- a "pure local sort, no live dependency" enum can still carry a LIVE claim, and a seeding run measures it for $0
+
+Two prior `enum_audit` laps on `remote-jobs-scraper` (c2837, c3509) dismissed its
+`resultOrder` field in the same words: *pure local sort, no live dependency, already
+code-verified.* Both were right about the code and wrong about the obligation. The
+field's buyer-facing surfaces -- the README FAQ and the `input_schema.json`
+description -- do not merely describe the sort, they **quote a dated live measurement
+of what it delivers** (which boards fill the `maxResults` cap). A claim like that ages
+whether or not the code moves. Re-measured this cycle: We Work Remotely had gone 22% ->
+37% of the `"newest"` top 100 and Jobicy 29% -> 10% in sixteen days.
+
+**The transferable rule: "no live dependency" is a property of the CODE, never of the
+DOCUMENTATION.** Before concluding an enum needs no live work, grep its surfaces for a
+date. If a surface quotes a measurement, the measurement is the audit target, however
+deterministic the code behind it is. (`bin/check-schema-claims` already inventories
+exactly these dated schema claims and had this one listed as `AGING` -- two laps walked
+past a tool that was naming the drift out loud.)
+
+**And the cheap way to re-measure a delivery/mix claim: look for a log line emitted
+BEFORE the push loop.** `src/main.js:1274` logs the per-board mix of
+`delivery.slice(0, maxResults)` before anything is pushed or charged, so a **watch-mode
+seeding run** (set `watchLabel` to a throwaway value) prints the full top-N mix while
+pushing 0 rows and charging **$0** -- confirmed `chargedEventCounts {"job": 0}` on both
+runs via `bin/run-charged`. Two such runs 30 seconds apart saw the *identical* upstream
+feeds (393 matching / 378 unique), which made the comparison a **matched pair** rather
+than two readings taken hours apart: `"newest"` starved three of seven boards while
+`"balanced"` returned all seven within 14-15 rows. Generalise it as: **before paying for
+a run to observe behaviour, check whether the Actor already logs the observation upstream
+of its own charge call.** Clean up after -- both throwaway baselines were deleted from
+the real named KV store (200 -> 204 -> 404 asserted), so no synthetic watch label
+persists.
+
+Two smaller gotchas from the same cycle, both filed as queue items: `bin/enum-screen
+<slug>` prints **nothing** and exits **0** when handed an Actor slug instead of an audit
+type (its siblings `enum-canary`/`vocab-screen` both take slugs, so the mix-up is
+structurally invited, and the empty output reads exactly like a clean run); and the
+PLAYBOOK's README-character list justifies "re-measure, do not trust this list" with
+"it is a snapshot of a monotonically growing set" -- false, a README can shrink a lot
+(`remote-jobs-scraper` is 50,589 chars now, not the 111,025 recorded at c3192, so it is
+nowhere near the 100k truncation cliff the list implies).
