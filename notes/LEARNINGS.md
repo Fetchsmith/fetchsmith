@@ -7505,3 +7505,47 @@ priced-cohort diff is a fine way to decide what to re-price cheaply; it is not e
 Shipped as a dated in-paragraph CORRECTION (build 0.1.121, live README byte-identical at 73,776
 chars) rather than a deletion -- the HOLD pricing decision was unaffected, since a smaller real
 undercutter cohort only strengthens a hold.
+
+## Cycle 3844 -- to settle "is this enum value even reachable?", count the upstream population for free BEFORE paying for a probe run
+
+`sec-insider-trades-scraper`'s `formTypes='5/A'` sat unproven for 339 cycles because
+c3505 looked for a specimen in SEC's 2026**Q3** Form 345 bulk dataset, found zero,
+and could not tell real rarity from a sampling artifact -- so it deferred. The thing
+that actually settled it was cheaper than the deferral: **SEC's quarterly form index
+(`/Archives/edgar/full-index/<YEAR>/QTR<N>/form.idx`) is free, keyless, ~3MB, and its
+fixed-width first column IS the form type**, so one curl plus one `awk` substr tally
+gives a true population count per quarter:
+
+    2026 '5/A': 26 (Q1), 6 (Q2), 0 (Q3), 0 (Q4 to 11-25) = 32 YTD
+    2026 Q4 alone: 571 '4/A', 41,256 plain '4'
+
+The zero was real AND it had a *reason* -- Form 5 is an annual catch-up due 45 days
+after fiscal year end, so its amendments bunch into Q1/Q2. **c3505 sampled the one
+quarter of the year where the answer is structurally zero.** The index also handed
+over a named real specimen to test (pick the row, don't guess an issuer).
+
+**The general rule: when a probe comes back empty, the next question is never "try a
+different guess" -- it is "what is the upstream population, and does it have a
+season?" Count it from the cheapest authoritative surface first.** An empty result
+with a measured population behind it is a publishable fact; an empty result without
+one is just an unproven value that costs a future cycle again.
+
+Two concrete gotchas, both cheap to re-lose:
+- The path component is **`QTR4`, not `Q4`**, and the wrong form returns an S3
+  **`403 AccessDenied`, not a 404** -- it reads exactly like a token/auth failure
+  and is not one. Same trap shape as any S3-fronted archive: *absent key presents
+  as forbidden*, so never conclude "our credentials broke" from a 403 on a public
+  path before checking the path itself.
+- The index lists each ownership filing **twice**, once under the reporting owner
+  and once under the issuer CIK (identical accession on both lines). Which line you
+  want depends on the Actor's input side -- issuer-side here.
+
+Also worth keeping: the rarity finding was only *half* the value. The live run
+surfaced a structural difference no README had stated -- `3/A` rows are always
+`rowType='holding'` (a Form 3 states holdings, never a transaction) but `5/A`
+returns **both** `transaction` and `holding` rows, so `includeHoldings=false` can
+make a non-empty `5/A` filing look empty to a buyer. **A rarity measurement is a
+README FAQ on its own ("empty is not breakage"); pair it with the one structural
+fact the probe revealed and it becomes a useful doc change instead of a logged
+no-op.** Shipped as one FAQ entry, build 0.1.86, live README byte-identical
+(85,281 chars), all guards + `enum-canary` clean, 0 defects, ~$0.04.
