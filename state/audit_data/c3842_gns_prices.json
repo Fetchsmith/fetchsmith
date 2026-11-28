@@ -1,0 +1,1882 @@
+[
+ {
+  "handle": "vamsi-krishna/stock-market-news-collector",
+  "title": "Stock Market News Scraper",
+  "users": 35,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.00225,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 4e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0025,
+     "SILVER": 0.00225,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "News article"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 4.5e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 4e-05,
+     "DIAMOND": 4e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get stock market news as JSON from RSS and Google News. Filter by ticker, add sentiment and event tags, schedule only-new alerts for Slack or Zapier. US, India, and crypto presets \u2014 MarketWatch, CNBC, Yahoo Finance. Export CSV/Excel or use the API. From $2/1k. No login."
+ },
+ {
+  "handle": "zinin/intent-signal-aggregator",
+  "title": "Hiring & News Intent Signals for B2B Sales",
+  "users": 27,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0038,
+   "DIAMOND": 0.0032,
+   "FREE": 0.004,
+   "GOLD": 0.0034,
+   "PLATINUM": 0.00328,
+   "SILVER": 0.0036
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "BRONZE": 0.0038,
+     "DIAMOND": 0.0032,
+     "FREE": 0.004,
+     "GOLD": 0.0034,
+     "PLATINUM": 0.00328,
+     "SILVER": 0.0036
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Company activity report"
+   }
+  },
+  "desc": "One row per company: open roles on its Greenhouse, Lever or Ashby job board (sales, marketing, engineering counts), dated Google News headlines and a 0\u2013100 activity score with evidence. For account research, not proof of buying intent. $0.004 per company."
+ },
+ {
+  "handle": "parseforge/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 22,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.01734,
+   "BRONZE": 0.01588,
+   "SILVER": 0.01444,
+   "GOLD": 0.01299,
+   "PLATINUM": 0.011691,
+   "DIAMOND": 0.010392
+  },
+  "start_fee": 0.00375,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-text,related-coverage,result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.01734,
+     "BRONZE": 0.01588,
+     "SILVER": 0.01444,
+     "GOLD": 0.01299,
+     "PLATINUM": 0.011691,
+     "DIAMOND": 0.010392
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   },
+   "article-text": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.00552,
+     "SILVER": 0.00504,
+     "GOLD": 0.0045,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.0045
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Full article text"
+   },
+   "related-coverage": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00276,
+     "SILVER": 0.00252,
+     "GOLD": 0.00225,
+     "PLATINUM": 0.00225,
+     "DIAMOND": 0.00225
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Related coverage"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0046,
+     "SILVER": 0.0042,
+     "GOLD": 0.00375,
+     "PLATINUM": 0.00375,
+     "DIAMOND": 0.00375
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrapes Google News articles by search query, topic, or date range. Returns each article as a flat row with title, URL, source, and publication time. Supports 80+ locales and optional article details."
+ },
+ {
+  "handle": "outspoken_strategy/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 22,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search Google News by keyword and export articles as structured data: title, description, source, published date and article URL. Supports multiple keywords, language/region targeting and per-keyword limits."
+ },
+ {
+  "handle": "nexgendata/news-mcp-server",
+  "title": "News MCP \u2014 AP, BBC, NPR & Google News for AI Agents",
+  "users": 20,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-call",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "tool-call": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "MCP server exposing AP, BBC, NPR, Hacker News and Google News search as agent tools. Connect Claude, Cursor, n8n or the OpenAI Agents SDK to live news feeds."
+ },
+ {
+  "handle": "knowten/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 20,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Per news record"
+   }
+  },
+  "desc": "Scrape Google News efficiently without a browser."
+ },
+ {
+  "handle": "mambalabs/funding-press-signal-scanner",
+  "title": "Funding and Press Signal Scanner",
+  "users": 20,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03,
+   "BRONZE": 0.0285,
+   "SILVER": 0.027,
+   "GOLD": 0.0255,
+   "PLATINUM": 0.0255,
+   "DIAMOND": 0.0255
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.03,
+     "BRONZE": 0.0285,
+     "SILVER": 0.027,
+     "GOLD": 0.0255,
+     "PLATINUM": 0.0255,
+     "DIAMOND": 0.0255
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scans Google News and PR wires for funding rounds, exec moves, product launches, and acquisitions at any company. Returns deduplicated, dated events in flat Clay-ready JSON for RevOps and outbound."
+ },
+ {
+  "handle": "nexgendata/google-news-scraper",
+  "title": "Google News Scraper \u2014 Google News API for Headlines",
+  "users": 17,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "News article"
+   }
+  },
+  "desc": "Google News scraper and Google News API alternative: headlines and articles by query or topic, language and country, with publish date filters and resolved article URLs. Clean JSON for PR, media monitoring and AI agents."
+ },
+ {
+  "handle": "muhammadafzal/google-news-scraper",
+  "title": "Google News Scraper & API \u2014 Headlines, Publishers & Dates",
+  "users": 16,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.01,
+   "SILVER": 0.01,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,full-text-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "full-text-result": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "full-text-result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape Google News by keyword or RSS feed into JSON: headline, publisher, publish date, snippet. Google News API alternative for monitoring. $10 per 1,000."
+ },
+ {
+  "handle": "vulnv/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 15,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): news-fetch,result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   },
+   "news-fetch": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Start news fetch"
+   }
+  },
+  "desc": "Track Google News coverage for your chosen keywords, countries, and languages. Get curated articles with titles, snippets, links, and metadata delivered straight to your Apify dataset for easy analysis or automation."
+ },
+ {
+  "handle": "fortuitous_pirate/google-news-scraper",
+  "title": "Google News Scraper: Full Text, Topics, Alerts \u2014 $4.5/1k",
+  "users": 15,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,article-content",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Article"
+   },
+   "article-content": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Article content"
+   }
+  },
+  "desc": "Scrape Google News by keyword, topic, publisher or URL: real article URLs, ISO dates, sources, optional full article text, time ranges, 100+ locales, bulk query import, dedupe and a monitor mode that returns only new articles. No login or cookies. MCP-ready for AI agents. $4.5 per 1,000 records."
+ },
+ {
+  "handle": "scrapeify/google-news-scraper",
+  "title": "Google News Scraper \u2014 Headlines, Sources & Article URLs",
+  "users": 13,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Google News scraper for headlines and article URLs. Collect up to 2,000 deduplicated articles with titles, sources, dates, and snippets. Export CSV or JSON. No API key. Apify AI, MCP, and Cursor ready."
+ },
+ {
+  "handle": "brilliant_gum/google-news-scraper",
+  "title": "Google News Scraper \u2014 Full Article Text & Sentiment",
+  "users": 13,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes Google News RSS feeds for search queries and topic categories. Returns articles with decoded URLs, sentiment analysis, reading time, full-text extraction, and deduplication across queries."
+ },
+ {
+  "handle": "dami_studio/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00295,
+   "SILVER": 0.0029,
+   "GOLD": 0.00285,
+   "PLATINUM": 0.00285,
+   "DIAMOND": 0.00285
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "article": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00295,
+     "SILVER": 0.0029,
+     "GOLD": 0.00285,
+     "PLATINUM": 0.00285,
+     "DIAMOND": 0.00285
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Article"
+   }
+  },
+  "desc": "Google News scraper API by keyword or topic, one row per headline: title, publisher, date, snippet and the publisher's real link, decoded from Google's redirect, with links that would not decode marked. Full text, and a summary on your own OpenAI key, are optional. $3.00 per 1,000 articles."
+ },
+ {
+  "handle": "lokki/news-finder-monitor",
+  "title": "News Finder & Monitor",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Google Alerts, but structured, automatable, and API-first. Monitor companies, competitors, topics, launches, and press releases from Google News RSS, public feeds, Hacker News, and Product Hunt."
+ },
+ {
+  "handle": "tenfoldfleet/google-news-scraper",
+  "title": "Google News Scraper API - Articles, Full Text & Decoded Links",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,article-text",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "article": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Article"
+   },
+   "article-text": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Full article text"
+   }
+  },
+  "desc": "Get news articles from Google News by keyword, topic or top stories in any country: title, publisher, date, real article URL (decoded from Google links) and optional full text. $4 per 1,000 articles; full text +$3 per 1,000. Failed queries free."
+ },
+ {
+  "handle": "taroyamada/google-news-scraper",
+  "title": "Google News Scraper \u2014 Headlines, Article URLs & RSS",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Google News RSS article"
+   }
+  },
+  "desc": "Google News scraper: headlines, article URLs and RSS-style results. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 query + maxItems 3 \u2248 USD 0.009): https://console.apify.com/actors/SR4f0KuxFp8lVIgro/input"
+ },
+ {
+  "handle": "codingfrontend/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00399
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00399
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "A robust, high-performance utility designed for developer automation, data integration, and AI training. Features built-in captcha bypass, headful/headless browser execution, and proxy support to scrape Google data seamlessly, reliably, and at scale."
+ },
+ {
+  "handle": "datamole/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result-item"
+   }
+  },
+  "desc": "Search Google News by keyword, topic or location in 50+ country editions. Get headline, publisher, publish time and the real article URL, plus related coverage. Optionally extract image, author and full article text. Daily split goes past the 100 result limit."
+ },
+ {
+  "handle": "hiver/google-news-scraper",
+  "title": "Google News API & URL Decoder: Real Article URLs",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.00162,
+   "SILVER": 0.00144,
+   "GOLD": 0.00126,
+   "PLATINUM": 0.00126,
+   "DIAMOND": 0.00126
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,decoded-link",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "article": {
+    "tiers": {
+     "FREE": 0.0018,
+     "BRONZE": 0.00162,
+     "SILVER": 0.00144,
+     "GOLD": 0.00126,
+     "PLATINUM": 0.00126,
+     "DIAMOND": 0.00126
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "News article returned"
+   },
+   "decoded-link": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.0007,
+     "SILVER": 0.00065,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Google News link decoded"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Google News API and URL decoder: search any keyword or topic in any country, or paste news.google.com/rss/articles links or RSS feed URLs, and get the publisher's real article URL as JSON (searches add title, date, snippet). $0.80 per 1,000 decoded links; failures free. Unofficial."
+ },
+ {
+  "handle": "automly/google-news-scraper-api",
+  "title": "Google News Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0035
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Google News by keyword: headline, publisher, real article link, date and full article text, with only new articles on each scheduled run. Add RSS or Atom feeds to the same table. No API key. Export to CSV, JSON or Excel, schedule runs or use the API."
+ },
+ {
+  "handle": "sonic_scraper/google-news-scraper",
+  "title": "Google News Scraper & Monitor - $1 per 1,000 Articles",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "News article"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Google News Scraper and news monitor: get headlines, publishers, publish dates, snippets and links for any keyword, country and language. Only-new mode returns just unseen articles for alerts. Date, phrase and publisher filters. $1 per 1,000 articles, no API key."
+ },
+ {
+  "handle": "tactful_anvil/google-news-scraper",
+  "title": "Google News Scraper | Keywords, Topics, Real URLs & Text",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.0032,
+   "BRONZE": 0.0032,
+   "SILVER": 0.00272,
+   "GOLD": 0.00224,
+   "PLATINUM": 0.00224,
+   "DIAMOND": 0.00224
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,article-text",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "article": {
+    "tiers": {
+     "FREE": 0.0032,
+     "BRONZE": 0.0032,
+     "SILVER": 0.00272,
+     "GOLD": 0.00224,
+     "PLATINUM": 0.00224,
+     "DIAMOND": 0.00224
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Article"
+   },
+   "article-text": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.006,
+     "SILVER": 0.0051,
+     "GOLD": 0.0042,
+     "PLATINUM": 0.0042,
+     "DIAMOND": 0.0042
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Article with full text"
+   }
+  },
+  "desc": "Scrape Google News by keyword, topic, location or RSS URL in any language/country. Clean title, publisher, REAL article URL (redirect decoded), publish time, age, related coverage, optional full text. Time filters, dedupe, monitor mode for new articles only. $3.20 per 1,000."
+ },
+ {
+  "handle": "brasildados/google-news-scraper-brasil-api",
+  "title": "Google News Scraper Brasil API - Monitor de Not\u00edcias e Marcas",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.12,
+   "BRONZE": 0.1,
+   "SILVER": 0.08,
+   "GOLD": 0.07,
+   "PLATINUM": 0.07,
+   "DIAMOND": 0.07
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.12,
+     "BRONZE": 0.1,
+     "SILVER": 0.08,
+     "GOLD": 0.07,
+     "PLATINUM": 0.07,
+     "DIAMOND": 0.07
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Por not\u00edcia retornada"
+   }
+  },
+  "desc": "Monitore not\u00edcias, marcas, empresas e temas no Google News com buscas em portugu\u00eas e foco no Brasil. Informe uma ou v\u00e1rias consultas e exporte t\u00edtulo, fonte, autores, link, dom\u00ednio, imagens e data de publica\u00e7\u00e3o em JSON, CSV ou Excel para clipping, reputa\u00e7\u00e3o, pesquisa de mercado e alertas."
+ },
+ {
+  "handle": "insights_data/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "main_result",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): main_result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "main_result": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0036,
+     "SILVER": 0.0032,
+     "GOLD": 0.0028,
+     "PLATINUM": 0.0028,
+     "DIAMOND": 0.0028
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Results"
+   }
+  },
+  "desc": "Scrape Google News by search term, topic or link. Get headline, publisher, publish date and the real article URL, plus snippet, image, author and keywords when available. Filter by date, country, language and publisher. Bulk input, live results, no login needed."
+ },
+ {
+  "handle": "rel8ble/google-news-scraper",
+  "title": "Google News Scraper & API - News Monitoring & Real Article URLs",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Google News scraper and API: keywords, Google News topics or cities in any language and country, with hour-to-year or date-range filters. One row per article: headline, source, publish date, Google link, real publisher URL and optional full text (free). $0.20 per 1,000 articles, no start fee."
+ },
+ {
+  "handle": "hipersoft/google-news-scraper",
+  "title": "Google News Scraper \u2014 Headlines by Keyword & Topic",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-scraped",
+  "unit_tiers": {
+   "FREE": 0.00425,
+   "BRONZE": 0.0034,
+   "SILVER": 0.002763,
+   "GOLD": 0.002125,
+   "PLATINUM": 0.002125,
+   "DIAMOND": 0.002125
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "article-scraped": {
+    "tiers": {
+     "FREE": 0.00425,
+     "BRONZE": 0.0034,
+     "SILVER": 0.002763,
+     "GOLD": 0.002125,
+     "PLATINUM": 0.002125,
+     "DIAMOND": 0.002125
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Article scraped"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape Google News for any search keyword or topic section (Business, Technology, Sports\u2026). Returns headline, source, publish time, article link and snippet for any language and country. No setup."
+ },
+ {
+  "handle": "darknezz/press-release-monitor",
+  "title": "Press Release Monitor \u2014 Newswire & Newsroom Alerts",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "press-release-extracted",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,press-release-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   },
+   "press-release-extracted": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Press release extracted"
+   }
+  },
+  "desc": "Monitor press releases from PRWeb, Google News, and Dow Jones. Filter by keywords, extract full text, and track company announcements in real-time."
+ },
+ {
+  "handle": "steadyfetch/google-news-rss-scraper",
+  "title": "Google News Scraper \u2014 News by Query, Exact Limit, No Start Fee",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.0032,
+   "BRONZE": 0.0028,
+   "SILVER": 0.0024,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,query-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "article": {
+    "tiers": {
+     "FREE": 0.0032,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0024,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Article"
+   },
+   "query-checked": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Query check"
+   }
+  },
+  "desc": "Type a search query and get Google News as rows \u2014 the headline, the Google News link, Google's own article id, the publication time as a real ISO timestamp, the publisher and their site, and how many outlets carried the story. From $1.60/1,000 articles, exact limit, no start fee."
+ },
+ {
+  "handle": "scrapers_lat/google-news-scraper",
+  "title": "Google News Scraper - News API, Articles & RSS",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_sentiment,ai_summary,ai_topics,details,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007385,
+     "SILVER": 0.006769,
+     "GOLD": 0.006154,
+     "PLATINUM": 0.006154,
+     "DIAMOND": 0.006154
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.009231,
+     "BRONZE": 0.008615,
+     "SILVER": 0.008,
+     "GOLD": 0.007385,
+     "PLATINUM": 0.007385,
+     "DIAMOND": 0.007385
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "details"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_summary"
+   },
+   "ai_sentiment": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_sentiment"
+   },
+   "ai_topics": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "ai_topics"
+   }
+  },
+  "desc": "Scrape Google News with no API key. Search by keyword, topic or headlines and get article title, publisher, date, snippet, image, author and full text in any country and language. Resolves real publisher URLs. For news, media and brand monitoring. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "moving_beacon-owner1/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes Google News articles by search term, extracting headlines, sources, publication dates, and links. Supports language, country, and time-range filters for news monitoring, brand tracking, and media analysis."
+ },
+ {
+  "handle": "navy_currant/news-radar",
+  "title": "Google News Keyword Monitor",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Monitor Google News for any keyword on a schedule. Returns new articles mentioning your term, deduplicated so you only see fresh coverage. Perfect for brand, PR, and competitor monitoring."
+ },
+ {
+  "handle": "agentsgearbox/google-news-scraper",
+  "title": "Google News Scraper \u00b7 Real URLs, Full Text, Any Edition",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,article-text",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "article": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00075,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "article"
+   },
+   "article-text": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00075,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "extracted article text"
+   }
+  },
+  "desc": "Google News scraper with the real publisher URL on every article, optional full article text (charged only when extracted), keyword searches with Google operators, topic sections, several country editions per run, since-last-run checkpoint. $1 per 1,000 articles; first 25 each month free."
+ },
+ {
+  "handle": "originalvi/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "article-scraped": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Article scraped"
+   }
+  },
+  "desc": "Scrape Google News for any keyword or query: headlines, source, publish date, snippet and link. Multi-language, multi-country, time-window filters. Fast, no browser."
+ },
+ {
+  "handle": "bgfc97/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-scraped",
+  "unit_tiers": {
+   "FREE": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "article-scraped": {
+    "tiers": {
+     "FREE": 0.00075
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Article scraped"
+   }
+  },
+  "desc": "Monitor Google News: articles by keyword or topic with title, source, published date, snippet and link, for any language and country, via the official RSS feed. Reliable, no anti-bot."
+ },
+ {
+  "handle": "sthiven_r/google-news-monitor",
+  "title": "Google News Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,default",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "default": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "monitor"
+   }
+  },
+  "desc": "Track keywords in Google News and get recent articles (title, link, date, source). For PR, brand monitoring & research."
+ },
+ {
+  "handle": "crw/google-news-scraper",
+  "title": "Google News Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get structured article data from Google News \u2014 no API key or login needed. Supports keyword search (~100 results) and topic/section feeds (~250 results) across 130+ languages and regions. Returns title, URL, publish time, source, thumbnail, and authors in clean JSON."
+ },
+ {
+  "handle": "romy/google-news-all-in-one-api",
+  "title": "Google News All-In-One Api",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0092,
+   "SILVER": 0.0085,
+   "GOLD": 0.0078,
+   "PLATINUM": 0.0072,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,config,discover,edition,feed,search,section,suggest",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   },
+   "feed": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.0092,
+     "SILVER": 0.0085,
+     "GOLD": 0.0078,
+     "PLATINUM": 0.0072,
+     "DIAMOND": 0.0068
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Feed"
+   },
+   "search": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.0092,
+     "SILVER": 0.0085,
+     "GOLD": 0.0078,
+     "PLATINUM": 0.0072,
+     "DIAMOND": 0.0068
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Search"
+   },
+   "section": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.01104,
+     "SILVER": 0.0102,
+     "GOLD": 0.00936,
+     "PLATINUM": 0.00864,
+     "DIAMOND": 0.00816
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Section"
+   },
+   "discover": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00276,
+     "SILVER": 0.00255,
+     "GOLD": 0.00234,
+     "PLATINUM": 0.00216,
+     "DIAMOND": 0.00204
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Discover"
+   },
+   "suggest": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00092,
+     "SILVER": 0.00085,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00072,
+     "DIAMOND": 0.00068
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Suggest"
+   },
+   "edition": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.00184,
+     "SILVER": 0.0017,
+     "GOLD": 0.00156,
+     "PLATINUM": 0.00144,
+     "DIAMOND": 0.00136
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Edition"
+   },
+   "config": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00092,
+     "SILVER": 0.00085,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00072,
+     "DIAMOND": 0.00068
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Config"
+   }
+  },
+  "desc": "Real-time, unofficial Google News data as a REST API \u2014 personalized feeds, full-text search, regional editions, autocomplete, and category browsing. No scraping, no HTML parsing: this talks directly to the same private API the official Google News Android app uses, and returns clean JSON"
+ }
+]
