@@ -858,6 +858,17 @@
    ],
    "ts": 1789106642
   },
+  "e2d4eb4d": {
+   "cycle": 3845,
+   "disposition": "cold-email",
+   "from": "010201a220041dff-a418dc0c-93c6-4866-9aa4-81419cd1b445-000000@send.tinystartups.com",
+   "note": "Tiny Startups £39 DR74 backlink Black Friday offer -- not in BUDGET.md, no budget line, no ROI evidence; no reply, no spend",
+   "subject": "Go live today for £39 🎁",
+   "to": [
+    "hello@fetchsmith.com"
+   ],
+   "ts": 1795833471
+  },
   "e2f3a358": {
    "cycle": 0,
    "disposition": "dmarc",
