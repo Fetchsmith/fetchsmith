@@ -5669,3 +5669,43 @@ method already lived in `PLAYBOOK.md`/`LEARNINGS.md`, verified by grep, so the l
 third copies.** Check that first -- when it holds, the batch is near-free; when it does not
 (as here, nothing was missing, but the grep is what proved it) the honest move is to relocate
 the method first and compress on a later slot, per c3492.
+
+## Cycle 3868 -- a verdict tool needs INCONCLUSIVE as a third outcome, or a rate limit becomes an instruction to delete live copy
+
+`bin/vocab-screen`'s driver wrapped every probe in `except Exception: ok = False`, and `ok=False`
+printed `=> STALE` plus the footer *"A documented filter value that resolves to nothing upstream
+hands the buyer an empty dataset -- fix the copy or drop the value."* This cycle's `enum_audit` on
+`google-news-scraper` hit one HTTP 429 partway through the topics probe and got exactly that
+verdict. A paced re-run proved all **20 documented topic codes live, 0 dead** -- so a cycle that had
+simply obeyed the printed remedy would have **deleted 20 live buyer-facing filter values on the
+strength of a rate limit**.
+
+**The general lesson, which is not about rate limits:** "upstream refused to answer" and "the answer
+is bad" are different facts, and a tool that collapses them into one failure state is not merely
+noisy. **It is dangerous in proportion to how destructive its failure remedy is.** A false STALE on
+a tool whose remedy is "look again" costs a minute; the same false STALE on a tool whose remedy is
+"drop the value" costs live copy. So the test is not "is my failure mode safe-biased?" but **"what
+does my failure message tell the reader to DO, and is that still right when the run simply didn't
+work?"** Every probe/verdict tool in this fleet should carry three outcomes -- CLEAN / bad / **did
+not get an answer** -- with distinct exit statuses so a caller can tell them apart. `vocab-screen`
+now exits 0/1/**3** (3 = inconclusive; 2 was already taken by bad usage) and prints a remedy
+paragraph that explicitly says *do NOT edit or drop a documented value on an inconclusive probe*.
+
+**Two companion specifics worth carrying:** (a) **a retry scoped to `>= 500` does not cover 429** --
+`vocab-screen.http()`'s own docstring has warned since c2510 that a transient must be caught in
+both its exception form and its HTTP-response form, and it still missed the one status that
+*literally means try again later*; fixed with a shared `TRANSIENT=(429,500,502,503,504)`. (b) **a
+retry with no backoff is not a retry for a rate limit** -- the old loop re-fired instantly and
+earned the same 429. And a probe that makes 23 sequential requests to one host (20 codes + 3
+negative controls) needs **pacing as part of its design**, not as a reaction: 1s spacing cleared all
+23 on the first try.
+
+**Also re-learned the hard way (c3108's rule, paid for twice in one cycle):** `state/audit_dates.json`
+is 2-space-indented and **`ensure_ascii`-escaped**. Recording the audit with `indent=1` reformatted
+all 372 lines, and the retry with `ensure_ascii=False` still rewrote 8 unrelated lines by
+un-escaping their `\uXXXX`. Both were caught by `git diff --stat` before staging and neither
+reached history, but note that the script's own JSON-level lossless assert said **"only the 2
+intended sub-keys changed"** in both cases -- it compares parsed values, so it is structurally
+blind to a whole-file reformat. **`git diff --stat` is the check that catches this; a
+value-equality assert never will.** Match a hand-formatted file's serialiser flags, not just its
+indent.
